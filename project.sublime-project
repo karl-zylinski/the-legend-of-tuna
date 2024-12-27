@@ -1,0 +1,46 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+		},
+		{
+			"path": "C:\\Odin\\core",
+		},
+		{
+			"path": "C:\\Odin\\base",
+		},
+		{
+			"path": "C:\\Odin\\vendor\\raylib",
+		},
+	],
+	"build_systems":
+	[
+		{
+			"file_regex": "^(.+)\\(([0-9]+):([0-9]+)\\) (.+)$",
+			"name": "Game template",
+			"windows": {
+				"working_dir": "$project_path",
+				"shell_cmd": "build_hot_reload.bat && start game_hot_reload.exe",
+			},
+			"osx": {
+				"working_dir": "$project_path",
+				"shell_cmd": "./build_hot_reload.sh && ./game_hot_reload.bin &",
+			},
+			"linux": {
+				"working_dir": "$project_path",
+				"shell_cmd": "./build_hot_reload.sh && ./game_hot_reload.bin &",
+			},
+		}
+	],
+	"settings":
+	{
+		"LSP":
+		{
+			"odin":
+			{
+				"enabled": true,
+			},
+		},
+	},
+}
