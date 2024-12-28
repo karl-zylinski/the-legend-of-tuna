@@ -13,6 +13,7 @@ Game_Memory :: struct {
 	physics_world: b2.WorldId,
 	rc: Round_Cat,
 	lc: Long_Cat,
+	tuna: Vec2,
 	walls: [dynamic]Wall,
 	atlas: rl.Texture2D,
 
@@ -70,12 +71,6 @@ update :: proc() {
 		dt = 0
 	}
 
-	if rl.IsKeyPressed(.SPACE) {
-		if g_mem.lc.state == .Done && g_mem.long_cat_spawns > 0 {
-			g_mem.long_cat_spawns -= 1
-			g_mem.lc = long_cat_make(get_world_mouse_pos(game_camera()))
-		}
-	}
 
 	if rl.IsKeyPressed(.F2) {
 		if g_mem.editing {
@@ -122,6 +117,18 @@ update :: proc() {
 
  	long_cat_update(&g_mem.lc)
 	round_cat_update(&g_mem.rc)
+
+	if rl.IsMouseButtonPressed(.LEFT) {
+		if (g_mem.lc.state == .Done || g_mem.lc.state == .Not_Spawned) && g_mem.long_cat_spawns > 0 {
+			g_mem.long_cat_spawns -= 1
+
+			if g_mem.lc.state == .Done {
+				long_cat_delete(g_mem.lc)
+			}
+
+			g_mem.lc = long_cat_make(get_world_mouse_pos(game_camera()))
+		}
+	}
 }
 
 Collision_Category :: enum u32 {
@@ -133,6 +140,12 @@ Collision_Category :: enum u32 {
 COLOR_WALL :: rl.Color { 16, 220, 117, 255 }
 
 draw_world :: proc() {
+	{
+		tuna_source := atlas_textures[.Tuna].rect
+		dest := draw_dest_rect(g_mem.tuna, tuna_source)
+		rl.DrawTexturePro(atlas, tuna_source, dest, {}, 0, rl.WHITE)
+	}
+
 	round_cat_draw(g_mem.rc)
 
 	for &w in g_mem.walls {
@@ -240,6 +253,7 @@ init :: proc() {
 	g_mem^ = Game_Memory {
 		atlas = rl.LoadTextureFromImage(atlas_image),
 		long_cat_spawns = 9,
+		tuna = {10, 0},
 	}
 
 	rl.UnloadImage(atlas_image)
@@ -260,7 +274,7 @@ init :: proc() {
 	}
 
 	g_mem.rc = round_cat_make()
-	g_mem.lc = long_cat_make({4, 1.1})
+	g_mem.lc.state = .Not_Spawned
 
 	game_hot_reloaded(g_mem)
 }

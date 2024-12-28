@@ -5,6 +5,5 @@
 
 x Make swing nicer ... Apply force for a while? Imagine base ball bat
 x Make long cat spawning pause (or slow down game a lot)
-- Make long cat spawnable X times (add HUD)
-- 
-- fix fixed timestep
+x Make long cat spawnable X times (add HUD)
+x fix fixed timestep

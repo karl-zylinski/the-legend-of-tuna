@@ -2,7 +2,6 @@ package game
 
 import b2 "box2d"
 import rl "vendor:raylib"
-import "core:math/linalg"
 
 Round_Cat :: struct {
 	body: b2.BodyId,
@@ -52,14 +51,6 @@ round_cat_draw :: proc(rc: Round_Cat) {
 }
 
 round_cat_update :: proc(rc: ^Round_Cat) {
-	vel := b2.Body_GetLinearVelocity(rc.body)
-	pos := body_pos(rc.body)
-
-	if linalg.length(vel) < 0.1 {
-		if g_mem.lc.state == .Done {
-			g_mem.lc = long_cat_make(pos + {-2, 3})
-		}
-	}
 	/*if rl.IsMouseButtonPressed(.LEFT) {
 		pp := round_cat_pos(rc^)
 		mp := get_world_mouse_pos()

@@ -13,6 +13,7 @@ Long_Cat_State :: enum {
 	Charging,
 	Swinging,
 	Done,
+	Not_Spawned,
 }
 
 Long_Cat :: struct {
@@ -34,6 +35,7 @@ Long_Cat :: struct {
 long_cat_enable_physics :: proc(lc: ^Long_Cat) {
 	bd := b2.DefaultBodyDef()
 	bd.type = .dynamicBody
+	bd.angularDamping = 0.5
 	bd.position = lc.pos - rl.Vector2Rotate({0, 1.7}, -lc.rot)
 	bd.rotation = b2.MakeRot(-lc.rot)
 	body := b2.CreateBody(g_mem.physics_world, bd)
@@ -74,7 +76,7 @@ long_cat_enable_physics :: proc(lc: ^Long_Cat) {
 	lc.hinge_joint = hinge_joint
 }
 
-long_cat_delete_physics :: proc(lc: ^Long_Cat) {
+long_cat_delete :: proc(lc: Long_Cat) {
 	b2.DestroyJoint(lc.hinge_joint)
 	b2.DestroyBody(lc.hinge_body)
 	b2.DestroyShape(lc.shape)
@@ -87,12 +89,14 @@ long_cat_make :: proc(pos: Vec2) -> Long_Cat {
 	}
 }
 
+SWING_MAX_RAD :: 2.5
+
 long_cat_update :: proc(lc: ^Long_Cat) {
 
 	switch lc.state {
 	case .Placing:
 		mp := get_world_mouse_pos(game_camera())	
-		lc.pos = mp
+		lc.pos = mp + {0, 1}
 
 		if rl.IsMouseButtonPressed(.LEFT) {
 			lc.state = .Charging
@@ -107,14 +111,14 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 			angle = angle-2*math.PI
 		}
 
-		angle = clamp(angle, -2.5, 2.5)
+		angle = clamp(angle, -SWING_MAX_RAD, SWING_MAX_RAD)
 
 		shake_amount: f32
 
 		if angle > 0 {
-			shake_amount = remap(angle, 1, 2, 0, 0.25)
+			shake_amount = remap(angle, 1, 2, 0, 0.15)
 		} else {
-			shake_amount = remap(angle, -1, -2, 0, 0.25)
+			shake_amount = remap(angle, -1, -2, 0, 0.15)
 		}
 
 		lc.rot = -angle + f32(math.cos(rl.GetTime()*100))*shake_amount*shake_amount
@@ -154,10 +158,11 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 
 		if lc.swing_timeout <= 0 {
 			lc.state = .Done
-			long_cat_delete_physics(lc)
 		}
 
 	case .Done:
+
+	case .Not_Spawned:
 	}
 }
 
@@ -170,12 +175,22 @@ long_cat_draw :: proc(lc: Long_Cat) {
 		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2-1.7}, lc.rot*RAD2DEG, rl.WHITE)
 	case .Charging:
 		dest := draw_dest_rect(lc.pos, source)
+
+		c := rl.RED
+		t := abs(lc.rot)/SWING_MAX_RAD
+		c.a = u8(remap(t*t, 0, 1, 90, 150))
+
+		rl.DrawCircleSector(vec2_flip(lc.pos), 3.7, 90, lc.rot*RAD2DEG+90, 10, c)
+
 		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2-1.7}, lc.rot*RAD2DEG, rl.WHITE)
 	case .Swinging:
 		dest := draw_dest_rect(body_pos(lc.body), source)
 		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, body_angle_deg(lc.body), rl.WHITE)
 
 	case .Done:
+		dest := draw_dest_rect(body_pos(lc.body), source)
+		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, body_angle_deg(lc.body), rl.WHITE)
 
+	case .Not_Spawned:
 	}	
 }
