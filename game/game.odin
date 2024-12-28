@@ -18,6 +18,9 @@ Game_Memory :: struct {
 
 	editing: bool,
 	es: Editor_State,
+	time_accumulator: f32,
+
+	long_cat_spawns: int,
 }
 
 atlas: rl.Texture2D
@@ -27,14 +30,22 @@ refresh_globals :: proc() {
 	atlas = g_mem.atlas
 }
 
+GAME_SCALE :: 10
+
 game_camera :: proc() -> rl.Camera2D {
 	w := f32(rl.GetScreenWidth())
 	h := f32(rl.GetScreenHeight())
 
 	return {
-		zoom = h/PIXEL_WINDOW_HEIGHT*10,
+		zoom = h/PIXEL_WINDOW_HEIGHT*GAME_SCALE,
 		target = vec2_flip(round_cat_pos(g_mem.rc)),
 		offset = { w/2, h/2 },
+	}
+}
+
+ui_camera :: proc() -> rl.Camera2D {
+	return {
+		zoom = f32(rl.GetScreenHeight())/PIXEL_WINDOW_HEIGHT,
 	}
 }
 
@@ -49,9 +60,22 @@ Level :: struct {
 }
 
 dt: f32
+real_dt: f32
 
 update :: proc() {
 	dt = rl.GetFrameTime()
+	real_dt = dt
+
+	if g_mem.lc.state == .Placing || g_mem.lc.state == .Charging {
+		dt = 0
+	}
+
+	if rl.IsKeyPressed(.SPACE) {
+		if g_mem.lc.state == .Done && g_mem.long_cat_spawns > 0 {
+			g_mem.long_cat_spawns -= 1
+			g_mem.lc = long_cat_make(get_world_mouse_pos(game_camera()))
+		}
+	}
 
 	if rl.IsKeyPressed(.F2) {
 		if g_mem.editing {
@@ -86,9 +110,17 @@ update :: proc() {
 	}
 
 	custom_context = context
-	b2.World_Step(physics_world(), 1/60.0, 4)
 
-	long_cat_update(&g_mem.lc)
+	g_mem.time_accumulator += dt
+
+	PHYSICS_STEP :: 1/60.0
+
+	for g_mem.time_accumulator >= PHYSICS_STEP {
+		b2.World_Step(physics_world(), PHYSICS_STEP, 4)	
+		g_mem.time_accumulator -= PHYSICS_STEP
+	}
+
+ 	long_cat_update(&g_mem.lc)
 	round_cat_update(&g_mem.rc)
 }
 
@@ -120,6 +152,11 @@ draw :: proc() {
 		rl.BeginMode2D(game_camera())
 
 		draw_world()
+
+		rl.EndMode2D()
+		rl.BeginMode2D(ui_camera())
+
+		rl.DrawText(fmt.ctprintf("%v", g_mem.long_cat_spawns), 10, PIXEL_WINDOW_HEIGHT - 30, 20, rl.WHITE)
 
 		rl.EndMode2D()
 		rl.EndDrawing()
@@ -202,6 +239,7 @@ init :: proc() {
 
 	g_mem^ = Game_Memory {
 		atlas = rl.LoadTextureFromImage(atlas_image),
+		long_cat_spawns = 9,
 	}
 
 	rl.UnloadImage(atlas_image)

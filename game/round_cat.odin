@@ -46,14 +46,8 @@ round_cat_pos :: proc(rc: Round_Cat) -> Vec2 {
 
 round_cat_draw :: proc(rc: Round_Cat) {
 	a := b2.Rot_GetAngle(b2.Body_GetRotation(rc.body))
-	pp := vec2_flip(round_cat_pos(rc))
 	source := atlas_textures[.Round_Cat].rect
-
-	dest := Rect {
-		pp.x, pp.y,
-		source.width/10, source.height/10,
-	}
-
+	dest := draw_dest_rect(body_pos(rc.body), source)
 	rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, -a*rl.RAD2DEG, rl.WHITE)
 }
 
