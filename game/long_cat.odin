@@ -129,7 +129,7 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 			lc.swing_force = abs(lc.rot)
 			lc.swing_dir = math.sign(lc.rot)
 			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*500, true)
-			lc.swing_timeout = 0.5
+			lc.swing_timeout = 2
 		}
 
 	case .Swinging:
