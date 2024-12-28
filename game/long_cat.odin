@@ -5,13 +5,140 @@ import b2 "box2d"
 import "core:math"
 import "core:fmt"
 
+_ :: b2
 _ :: fmt
+
+Long_Cat_State :: enum {
+	Charging,
+	Swinging,
+}
+
+Long_Cat :: struct {
+	pos: Vec2,
+	rot: f32,
+	state: Long_Cat_State,
+
+	body: b2.BodyId,
+	shape: b2.ShapeId,
+	hinge_body: b2.BodyId,
+	hinge_joint: b2.JointId,
+}
+
+long_cat_enable_physics :: proc(lc: ^Long_Cat) {
+	bd := b2.DefaultBodyDef()
+	bd.type = .dynamicBody
+	bd.position = lc.pos - rl.Vector2Rotate({0, 1.7}, -lc.rot)
+	bd.rotation = b2.MakeRot(-lc.rot)
+	body := b2.CreateBody(g_mem.physics_world, bd)
+
+	sd := b2.DefaultShapeDef()
+	sd.density = 2
+	sd.friction = 0.3
+	sd.restitution = 0.7
+
+	capsule := b2.Capsule {
+		center1 = {0, -1.8},
+		center2 = {0, 1.8},
+		radius = 0.5,
+	}
+
+	shape := b2.CreateCapsuleShape(body, sd, capsule)
+
+	hinge_body_def := b2.DefaultBodyDef()
+	hinge_body_def.position = lc.pos
+	hinge_body_def.type = .staticBody
+	hb := b2.CreateBody(g_mem.physics_world, hinge_body_def)
+
+	hinge_joint_def := b2.DefaultRevoluteJointDef()
+	hinge_joint_def.bodyIdA = hb
+	hinge_joint_def.bodyIdB = body
+	hinge_joint_def.localAnchorB = {0, 1.7}
+	hinge_joint_def.collideConnected = false
+	
+	hinge_joint := b2.CreateRevoluteJoint(g_mem.physics_world, hinge_joint_def)
+
+	lc.body = body
+	lc.shape = shape
+	lc.hinge_body = hb
+	lc.hinge_joint = hinge_joint
+}
+
+long_cat_make :: proc(pos: Vec2) -> Long_Cat {
+	return {
+		pos = pos,
+	}
+}
+
+long_cat_update :: proc(lc: ^Long_Cat) {
+	switch lc.state {
+	case .Charging:
+		mp := get_world_mouse_pos()
+		hinge_to_mouse := mp - lc.pos
+		angle := math.atan2(hinge_to_mouse.y, hinge_to_mouse.x) + math.PI/2
+
+		if angle > math.PI {
+			angle = angle-2*math.PI
+		}
+
+		angle = clamp(angle, -2, 2)
+
+		shake_amount: f32
+
+		if angle > 0 {
+			shake_amount = remap(angle, 1, 2, 0, 0.25)
+		} else {
+			shake_amount = remap(angle, -1, -2, 0, 0.25)
+		}
+
+		lc.rot = -angle + f32(math.cos(rl.GetTime()*100))*shake_amount*shake_amount
+
+		if rl.IsMouseButtonPressed(.LEFT) {
+			lc.state = .Swinging
+			long_cat_enable_physics(lc)
+			rot_norm := remap(lc.rot, -math.PI, math.PI, 0, 1)
+			b2.Body_ApplyAngularImpulse(lc.body, rot_norm*rot_norm*1500, true)
+		}
+
+	case .Swinging:
+		
+	}
+}
+
+long_cat_draw :: proc(lc: Long_Cat) {
+	switch lc.state {
+	case .Charging:
+		source := atlas_textures[.Long_Cat].rect
+
+		dest := Rect {
+			lc.pos.x, -lc.pos.y,
+			source.width/10, source.height/10,
+		}
+
+		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2-1.7}, lc.rot*RAD2DEG, rl.WHITE)
+	case .Swinging:
+		p := vec2_flip(body_pos(lc.body))
+		source := atlas_textures[.Long_Cat].rect
+
+		dest := Rect {
+			p.x, p.y,
+			source.width/10, source.height/10,
+		}
+
+		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, body_angle_deg(lc.body), rl.WHITE)
+	}
+	
+}
+
+
+/*
 
 Long_Cat :: struct {
 	body: b2.BodyId,
 	shape: b2.ShapeId,
 	hinge_body: b2.BodyId,
 	hinge_joint: b2.JointId,
+
+	pos: Vec2,
 }
 
 long_cat_make :: proc() -> Long_Cat {
@@ -83,9 +210,12 @@ long_cat_draw :: proc(lc: Long_Cat) {
 	source := atlas_textures[.Long_Cat].rect
 
 	dest := Rect {
-		pp.x, pp.y,
+		lc.pos.x, lc.pos.y,
 		source.width/10, source.height/10,
 	}
 
 	rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, body_angle_deg(lc.body), rl.WHITE)
 }
+
+
+*/

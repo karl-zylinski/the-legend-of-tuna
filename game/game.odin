@@ -150,7 +150,7 @@ init :: proc() {
 	})*/
 
 	g_mem.rc = round_cat_make()
-	g_mem.lc = long_cat_make()
+	g_mem.lc = long_cat_make({4, 1.1})
 
 	game_hot_reloaded(g_mem)
 }
