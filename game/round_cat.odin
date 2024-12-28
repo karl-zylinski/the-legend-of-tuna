@@ -13,6 +13,8 @@ round_cat_make :: proc() -> Round_Cat {
 	bd := b2.DefaultBodyDef()
 	bd.type = .dynamicBody
 	bd.position = {6, 0}
+	bd.linearDamping = 0.2
+	bd.angularDamping = 0.7
 	body := b2.CreateBody(g_mem.physics_world, bd)
 
 	sd := b2.DefaultShapeDef()

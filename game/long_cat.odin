@@ -38,7 +38,7 @@ long_cat_enable_physics :: proc(lc: ^Long_Cat) {
 	body := b2.CreateBody(g_mem.physics_world, bd)
 
 	sd := b2.DefaultShapeDef()
-	sd.density = 2
+	sd.density = 3
 	sd.friction = 0.3
 	sd.restitution = 0.7
 	sd.filter = {
@@ -87,6 +87,7 @@ long_cat_make :: proc(pos: Vec2) -> Long_Cat {
 }
 
 long_cat_update :: proc(lc: ^Long_Cat) {
+
 	switch lc.state {
 	case .Placing:
 		mp := get_world_mouse_pos(game_camera())	
@@ -105,7 +106,7 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 			angle = angle-2*math.PI
 		}
 
-		angle = clamp(angle, -2, 2)
+		angle = clamp(angle, -2.5, 2.5)
 
 		shake_amount: f32
 
@@ -120,13 +121,29 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 		if rl.IsMouseButtonPressed(.LEFT) {
 			lc.state = .Swinging
 			long_cat_enable_physics(lc)
-			//lc.swing_force = abs(lc.rot
-			//lc.swing_dir = math.sign(lc.rot)
-			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*60, true)
+			lc.swing_force = abs(lc.rot)
+			lc.swing_dir = math.sign(lc.rot)
+			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*500, true)
 			lc.swing_timeout = 2
 		}
 
 	case .Swinging:
+		contact_cap := b2.Body_GetContactCapacity(lc.body)
+		contact_data := make([]b2.ContactData, contact_cap, context.temp_allocator)
+		contact_data = b2.Body_GetContactData(lc.body, contact_data)
+
+		for &c in contact_data {
+			a_is_rc := c.shapeIdA == g_mem.rc.shape
+			b_is_rc := c.shapeIdB == g_mem.rc.shape
+			if a_is_rc || b_is_rc {
+				lc.swing_force = 0
+
+				break
+			}
+		}
+
+		b2.Body_ApplyTorque(lc.body, lc.swing_force * lc.swing_dir * 2000, true)
+
 		lc.swing_timeout -= rl.GetFrameTime()
 
 		if lc.swing_timeout <= 0 {
