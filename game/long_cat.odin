@@ -11,6 +11,7 @@ _ :: fmt
 Long_Cat_State :: enum {
 	Charging,
 	Swinging,
+	Done,
 }
 
 Long_Cat :: struct {
@@ -22,6 +23,8 @@ Long_Cat :: struct {
 	shape: b2.ShapeId,
 	hinge_body: b2.BodyId,
 	hinge_joint: b2.JointId,
+
+	swing_timeout: f32,
 }
 
 long_cat_enable_physics :: proc(lc: ^Long_Cat) {
@@ -63,6 +66,13 @@ long_cat_enable_physics :: proc(lc: ^Long_Cat) {
 	lc.hinge_joint = hinge_joint
 }
 
+long_cat_delete_physics :: proc(lc: ^Long_Cat) {
+	b2.DestroyJoint(lc.hinge_joint)
+	b2.DestroyBody(lc.hinge_body)
+	b2.DestroyShape(lc.shape)
+	b2.DestroyBody(lc.body)
+}
+
 long_cat_make :: proc(pos: Vec2) -> Long_Cat {
 	return {
 		pos = pos,
@@ -95,12 +105,19 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 		if rl.IsMouseButtonPressed(.LEFT) {
 			lc.state = .Swinging
 			long_cat_enable_physics(lc)
-			rot_norm := remap(lc.rot, -math.PI, math.PI, 0, 1)
-			b2.Body_ApplyAngularImpulse(lc.body, rot_norm*rot_norm*1500, true)
+			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*40, true)
+			lc.swing_timeout = 2
 		}
 
 	case .Swinging:
-		
+		lc.swing_timeout -= rl.GetFrameTime()
+
+		if lc.swing_timeout <= 0 {
+			lc.state = .Done
+			long_cat_delete_physics(lc)
+		}
+
+	case .Done:
 	}
 }
 
@@ -125,8 +142,10 @@ long_cat_draw :: proc(lc: Long_Cat) {
 		}
 
 		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, body_angle_deg(lc.body), rl.WHITE)
-	}
-	
+
+	case .Done:
+
+	}	
 }
 
 
