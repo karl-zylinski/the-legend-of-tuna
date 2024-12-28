@@ -1172,9 +1172,6 @@ DebugDraw :: struct {
 	// Draw a solid circle.
 	DrawSolidCircle: proc "c" (transform: Transform, radius: f32, color: HexColor, ctx: rawptr),
 
-	// Draw a capsule.
-	DrawCapsule: proc "c" (p1, p2: Vec2, radius: f32, color: HexColor, ctx: rawptr),
-
 	// Draw a solid capsule.
 	DrawSolidCapsule: proc "c" (p1, p2: Vec2, radius: f32, color: HexColor, ctx: rawptr),
 

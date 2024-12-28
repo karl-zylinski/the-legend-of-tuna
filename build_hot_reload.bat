@@ -1,5 +1,7 @@
 @echo off
 
+odin run atlas_builder
+
 set GAME_RUNNING=false
 set EXE=game_hot_reload.exe
 
