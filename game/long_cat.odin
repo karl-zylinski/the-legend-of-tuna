@@ -9,6 +9,7 @@ _ :: b2
 _ :: fmt
 
 Long_Cat_State :: enum {
+	Placing,
 	Charging,
 	Swinging,
 	Done,
@@ -38,10 +39,14 @@ long_cat_enable_physics :: proc(lc: ^Long_Cat) {
 	sd.density = 2
 	sd.friction = 0.3
 	sd.restitution = 0.7
+	sd.filter = {
+		categoryBits = u32(bit_set[Collision_Category] { .Long_Cat }),
+		maskBits = u32(bit_set[Collision_Category] { .Round_Cat }),
+	}
 
 	capsule := b2.Capsule {
-		center1 = {0, -1.8},
-		center2 = {0, 1.8},
+		center1 = {0, -1.9},
+		center2 = {0, 1.9},
 		radius = 0.5,
 	}
 
@@ -81,6 +86,14 @@ long_cat_make :: proc(pos: Vec2) -> Long_Cat {
 
 long_cat_update :: proc(lc: ^Long_Cat) {
 	switch lc.state {
+	case .Placing:
+		mp := get_world_mouse_pos(game_camera())	
+		lc.pos = mp
+
+		if rl.IsMouseButtonPressed(.LEFT) {
+			lc.state = .Charging
+		}
+
 	case .Charging:
 		mp := get_world_mouse_pos(game_camera())
 		hinge_to_mouse := mp - lc.pos
@@ -122,10 +135,19 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 }
 
 long_cat_draw :: proc(lc: Long_Cat) {
-	switch lc.state {
-	case .Charging:
-		source := atlas_textures[.Long_Cat].rect
+	source := atlas_textures[.Long_Cat].rect
 
+	switch lc.state {
+	case .Placing:
+
+		dest := Rect {
+			lc.pos.x, -lc.pos.y,
+			source.width/10, source.height/10,
+		}
+
+		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2-1.7}, lc.rot*RAD2DEG, rl.WHITE)
+
+	case .Charging:
 		dest := Rect {
 			lc.pos.x, -lc.pos.y,
 			source.width/10, source.height/10,
@@ -134,7 +156,6 @@ long_cat_draw :: proc(lc: Long_Cat) {
 		rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2-1.7}, lc.rot*RAD2DEG, rl.WHITE)
 	case .Swinging:
 		p := vec2_flip(body_pos(lc.body))
-		source := atlas_textures[.Long_Cat].rect
 
 		dest := Rect {
 			p.x, p.y,

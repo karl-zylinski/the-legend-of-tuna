@@ -92,15 +92,22 @@ update :: proc() {
 	round_cat_update(&g_mem.rc)
 }
 
+Collision_Category :: enum u32 {
+	Wall,
+	Long_Cat,
+	Round_Cat,
+}
+
 COLOR_WALL :: rl.Color { 16, 220, 117, 255 }
 
 draw_world :: proc() {
-	long_cat_draw(g_mem.lc)
 	round_cat_draw(g_mem.rc)
 
 	for &w in g_mem.walls {
 		rl.DrawRectanglePro(rect_flip(w.rect), {0, 0}, 0, COLOR_WALL)	
 	}
+	
+	long_cat_draw(g_mem.lc)
 }
 
 draw :: proc() {
@@ -164,14 +171,20 @@ make_wall :: proc(r: Rect) {
 		rect = r,
 	}
 
-	ground_body_def := b2.DefaultBodyDef()
-	ground_body_def.position = b2.Vec2{r.x + r.width/2, r.y + r.height/2}
-	w.body = b2.CreateBody(physics_world(), ground_body_def)
+	body_def := b2.DefaultBodyDef()
+	body_def.position = b2.Vec2{r.x + r.width/2, r.y + r.height/2}
+	w.body = b2.CreateBody(physics_world(), body_def)
 
-	ground_box := b2.MakeBox((r.width/2), (r.height/2))
-	ground_shape_def := b2.DefaultShapeDef()
-	ground_shape_def.friction = 0.7
-	w.shape = b2.CreatePolygonShape(w.body, ground_shape_def, ground_box)
+	box := b2.MakeBox((r.width/2), (r.height/2))
+	shape_def := b2.DefaultShapeDef()
+	shape_def.friction = 0.7
+	shape_def.filter = {
+		categoryBits = u32(bit_set[Collision_Category] { .Wall }),
+		maskBits = u32(bit_set[Collision_Category] { .Round_Cat, .Long_Cat }),
+	}
+
+	fmt.println(shape_def.filter)
+	w.shape = b2.CreatePolygonShape(w.body, shape_def, box)
 
 	append(&g_mem.walls, w)
 }

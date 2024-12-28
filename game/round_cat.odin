@@ -19,6 +19,10 @@ round_cat_make :: proc() -> Round_Cat {
 	sd.density = 1.5
 	sd.friction = 0.3
 	sd.restitution = 0.2
+	sd.filter = {
+		categoryBits = u32(bit_set[Collision_Category] { .Round_Cat }),
+		maskBits = u32(bit_set[Collision_Category] { .Long_Cat, .Wall }),
+	}
 
 	capsule := b2.Capsule {
 		center1 = {0, -0.2},
