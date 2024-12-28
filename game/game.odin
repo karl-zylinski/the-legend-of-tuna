@@ -1,23 +1,24 @@
 package game
 
-import "core:fmt"
-import "core:math/linalg"
-import b2 "../box2d"
+import b2 "box2d"
 import rl "vendor:raylib"
-import "core:c"
 import "base:runtime"
 
 PIXEL_WINDOW_HEIGHT :: 180
 
 Game_Memory :: struct {
 	physics_world: b2.WorldId,
-	player_body: b2.BodyId,
-	player_shape: b2.ShapeId,
+	rc: Round_Cat,
 	walls: [dynamic]Wall,
 	atlas: rl.Texture2D,
 }
 
+atlas: rl.Texture2D
 g_mem: ^Game_Memory
+
+refresh_globals :: proc() {
+	atlas = g_mem.atlas
+}
 
 game_camera :: proc() -> rl.Camera2D {
 	w := f32(rl.GetScreenWidth())
@@ -25,13 +26,9 @@ game_camera :: proc() -> rl.Camera2D {
 
 	return {
 		zoom = h/PIXEL_WINDOW_HEIGHT*10,
-		target = vec2_flip(player_pos()),
+		target = vec2_flip(round_cat_pos(g_mem.rc)),
 		offset = { w/2, h/2 },
 	}
-}
-
-player_pos :: proc() -> Vec2 {
-	return b2.Body_GetPosition(g_mem.player_body)
 }
 
 physics_world :: proc() -> b2.WorldId {
@@ -44,15 +41,7 @@ update :: proc() {
 	custom_context = context
 	b2.World_Step(physics_world(), 1/60.0, 4)
 
-	if rl.IsMouseButtonPressed(.LEFT) {
-		pp := player_pos()
-		mp := get_world_mouse_pos()
-
-		dist := pp - mp
-
-		b2.Body_ApplyLinearImpulseToCenter(g_mem.player_body, dist*20, true)
-		fmt.println(dist)
-	}
+	round_cat_update(&g_mem.rc)
 }
 
 COLOR_WALL :: rl.Color { 16, 220, 117, 255 }
@@ -63,71 +52,15 @@ draw :: proc() {
 
 	rl.BeginMode2D(game_camera())
 
-	r := b2.Body_GetRotation(g_mem.player_body)
-	a := b2.Rot_GetAngle(b2.Body_GetRotation(g_mem.player_body))
-
-	pp := vec2_flip(player_pos())
-
-	source := atlas_textures[.Round_Cat].rect
-
-	dest := Rect {
-		pp.x, pp.y,
-		source.width/10, source.height/10,
-	}
-
-	rl.DrawTexturePro(g_mem.atlas, source, dest, {dest.width/2, dest.height/2}, -a*rl.RAD2DEG, rl.WHITE)
+	round_cat_draw(g_mem.rc)
 
 	for &w in g_mem.walls {
 		rl.DrawRectanglePro(rect_flip(w.rect), {0, w.rect.height}, 0, COLOR_WALL)	
 	}
 
-	dd := b2.DebugDraw {
-		drawShapes = false,
-		DrawSolidCapsule = debug_draw_solid_capsule,
-		DrawPolygon = debug_draw_polygon,
-		DrawSolidPolygon = debug_draw_solid_polygon,
-		DrawCircle = debug_draw_circle,
-		DrawSolidCircle = debug_draw_solid_circle,
-		DrawSegment = debug_draw_segment,
-	}
-	
-	b2.World_Draw(physics_world(), &dd)
-
+	//debug_draw()
 	rl.EndMode2D()
-
 	rl.EndDrawing()
-}
-
-debug_draw_solid_capsule :: proc "c" (p1, p2: Vec2, radius: f32, color: b2.HexColor, ctx: rawptr) {
-	context = custom_context
-	fmt.println(p1)
-	rl.DrawCircleLinesV(p1, radius, rl.RED)
-	rl.DrawCircleLinesV(p2, radius, rl.RED)
-}
-
-debug_draw_polygon :: proc "c" (vertices: [^]Vec2, vertexCount: c.int, color: b2.HexColor, ctx: rawptr) {
-	context = custom_context
-	fmt.println("hi")
-}
-
-debug_draw_solid_polygon :: proc "c" (transform: b2.Transform, vertices: [^]Vec2, vertexCount: c.int, radius: f32, colr: b2.HexColor, ctx: rawptr ) {
-	context = custom_context
-	fmt.println("hi")
-}
-
-debug_draw_circle :: proc "c" (center: Vec2, radius: f32, color: b2.HexColor, ctx: rawptr) {
-	context = custom_context
-	fmt.println("hi")
-}
-
-debug_draw_segment :: proc "c" (p1, p2: Vec2, color: b2.HexColor, ctx: rawptr) {
-	context = custom_context
-	fmt.println("hi")
-}
-
-debug_draw_solid_circle :: proc "c" (transform: b2.Transform, radius: f32, color: b2.HexColor, ctx: rawptr) {
-	context = custom_context
-	fmt.println("hi")
 }
 
 get_world_mouse_pos :: proc() -> Vec2 {
@@ -208,22 +141,6 @@ init :: proc() {
 	world_def.gravity = GRAVITY
 	g_mem.physics_world = b2.CreateWorld(world_def)
 
-	player_body_def := b2.DefaultBodyDef()
-	player_body_def.type = .dynamicBody
-	player_body_def.position = {0, 0}
-	g_mem.player_body = b2.CreateBody(g_mem.physics_world, player_body_def)
-
-	shape_def := b2.DefaultShapeDef()
-	shape_def.density = 1.5
-	shape_def.friction = 0.3
-	shape_def.restitution = 0.2
-
-	capsule := b2.Capsule {
-		center1 = {0, -0.2},
-		center2 = {0, 0.2},
-		radius = 1,
-	}
-	g_mem.player_shape = b2.CreateCapsuleShape(g_mem.player_body, shape_def, capsule)
 
 	make_wall(GROUND)
 
@@ -231,6 +148,8 @@ init :: proc() {
 		6, -10,
 		1, 20,
 	})
+
+	g_mem.rc = round_cat_make()
 
 	game_hot_reloaded(g_mem)
 }
@@ -243,3 +162,4 @@ shutdown :: proc() {
 shutdown_window :: proc() {
 	rl.CloseWindow()
 }
+

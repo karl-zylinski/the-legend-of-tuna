@@ -42,6 +42,7 @@ game_memory_size :: proc() -> int {
 @(export)
 game_hot_reloaded :: proc(mem: rawptr) {
 	g_mem = (^Game_Memory)(mem)
+	refresh_globals()
 }
 
 @(export)

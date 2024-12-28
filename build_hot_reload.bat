@@ -47,7 +47,7 @@ echo %PDB_NUMBER% > pdbs\pdb_number
 :: Also note that we always write game.dll to the same file. game_hot_reload.exe
 :: monitors this file and does the hot reload when it changes.
 echo Building game.dll
-odin build game -debug -define:RAYLIB_SHARED=true -build-mode:dll -out:game.dll -pdb-name:pdbs\game_%PDB_NUMBER%.pdb > nul
+odin build game -vet -strict-style -debug -define:RAYLIB_SHARED=true -build-mode:dll -out:game.dll -pdb-name:pdbs\game_%PDB_NUMBER%.pdb > nul
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 :: If game.exe already running: Then only compile game.dll and exit cleanly
@@ -57,7 +57,7 @@ if %GAME_RUNNING% == true (
 
 :: Build game.exe, which starts the program and loads game.dll och does the logic for hot reloading.
 echo Building %EXE%
-odin build main_hot_reload -debug -out:%EXE%
+odin build main_hot_reload -vet -strict-style -debug -out:%EXE%
 IF %ERRORLEVEL% NEQ 0 exit /b 1
 
 :: Warning about raylib DLL not existing and where to find it.
