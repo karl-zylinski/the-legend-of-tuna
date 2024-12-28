@@ -1,6 +1,7 @@
 package game
 
 import rl "vendor:raylib"
+import b2 "box2d"
 import "core:fmt"
 import "core:math/linalg"
 
@@ -53,7 +54,9 @@ editor_update :: proc(es: ^Editor_State) {
 		camera_movement.x += 1
 	}
 
-	es.editor_camera_pos += linalg.normalize0(camera_movement) * 60 * dt
+	es.editor_camera_pos += linalg.normalize0(camera_movement) * 60 * real_dt
+
+	cam := editor_camera(es^)
 
 	if es.placing_box {
 		if rl.IsMouseButtonReleased(.LEFT) {
@@ -64,12 +67,21 @@ editor_update :: proc(es: ^Editor_State) {
 	} else {
 		if rl.IsMouseButtonPressed(.LEFT) {
 			es.placing_box = true
-			es.placing_start = get_world_mouse_pos(editor_camera(es^))
+			es.placing_start = get_world_mouse_pos(cam)
+		}
+
+		if rl.IsKeyPressed(.ONE) {
+			g_mem.starting_pos = get_world_mouse_pos(cam)
+			b2.Body_SetTransform(g_mem.rc.body, g_mem.starting_pos, b2.MakeRot(0))
+		}
+
+		if rl.IsKeyPressed(.TWO) {
+			g_mem.tuna = get_world_mouse_pos(cam)
 		}
 
 		if rl.IsMouseButtonPressed(.RIGHT) {
 			for w, i in g_mem.walls {
-				mp := get_world_mouse_pos(editor_camera(es^))
+				mp := get_world_mouse_pos(cam)
 
 				if rl.CheckCollisionPointRec(mp, w.rect) {
 					delete_wall(w)

@@ -8,10 +8,10 @@ Round_Cat :: struct {
 	shape: b2.ShapeId,
 }
 
-round_cat_make :: proc() -> Round_Cat {
+round_cat_make :: proc(pos: Vec2) -> Round_Cat {
 	bd := b2.DefaultBodyDef()
 	bd.type = .dynamicBody
-	bd.position = {6, 0}
+	bd.position = pos
 	bd.linearDamping = 0.2
 	bd.angularDamping = 0.7
 	body := b2.CreateBody(g_mem.physics_world, bd)
@@ -51,6 +51,22 @@ round_cat_draw :: proc(rc: Round_Cat) {
 }
 
 round_cat_update :: proc(rc: ^Round_Cat) {
+	tuna_circle := b2.Circle {
+		center = g_mem.tuna,
+		radius = 1,
+	}
+
+	tuna_circle_transf := b2.Transform {		
+		p = tuna_circle.center,
+	}
+
+	coll := b2.CollideCapsuleAndCircle(b2.Shape_GetCapsule(rc.shape), b2.Body_GetTransform(rc.body), tuna_circle, tuna_circle_transf)
+
+	if coll.pointCount > 0 {
+		g_mem.won = true
+	}
+
+
 	/*if rl.IsMouseButtonPressed(.LEFT) {
 		pp := round_cat_pos(rc^)
 		mp := get_world_mouse_pos()

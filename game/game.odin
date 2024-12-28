@@ -11,6 +11,7 @@ PIXEL_WINDOW_HEIGHT :: 180
 
 Game_Memory :: struct {
 	physics_world: b2.WorldId,
+	starting_pos: Vec2,
 	rc: Round_Cat,
 	lc: Long_Cat,
 	tuna: Vec2,
@@ -22,6 +23,7 @@ Game_Memory :: struct {
 	time_accumulator: f32,
 
 	long_cat_spawns: int,
+	won: bool,
 }
 
 atlas: rl.Texture2D
@@ -58,6 +60,8 @@ custom_context: runtime.Context
 
 Level :: struct {
 	walls: []Rect,
+	tuna_pos: Vec2,
+	starting_pos: Vec2,
 }
 
 dt: f32
@@ -67,15 +71,16 @@ update :: proc() {
 	dt = rl.GetFrameTime()
 	real_dt = dt
 
-	if g_mem.lc.state == .Placing || g_mem.lc.state == .Charging {
+	if g_mem.won || g_mem.lc.state == .Placing || g_mem.lc.state == .Charging {
 		dt = 0
 	}
-
 
 	if rl.IsKeyPressed(.F2) {
 		if g_mem.editing {
 			level := Level {
 				walls = make([]Rect, len(g_mem.walls), context.temp_allocator),
+				tuna_pos = g_mem.tuna,
+				starting_pos = g_mem.starting_pos,
 			}
 
 			for w, i in g_mem.walls {
@@ -143,7 +148,7 @@ draw_world :: proc() {
 	{
 		tuna_source := atlas_textures[.Tuna].rect
 		dest := draw_dest_rect(g_mem.tuna, tuna_source)
-		rl.DrawTexturePro(atlas, tuna_source, dest, {}, 0, rl.WHITE)
+		rl.DrawTexturePro(atlas, tuna_source, dest, {dest.width/2, dest.height/2}, 0, rl.WHITE)
 	}
 
 	round_cat_draw(g_mem.rc)
@@ -170,6 +175,10 @@ draw :: proc() {
 		rl.BeginMode2D(ui_camera())
 
 		rl.DrawText(fmt.ctprintf("%v", g_mem.long_cat_spawns), 10, PIXEL_WINDOW_HEIGHT - 30, 20, rl.WHITE)
+
+		if g_mem.won {
+			rl.DrawText("YAY!!! TUNA", 40, 40, 40, rl.WHITE)
+		}
 
 		rl.EndMode2D()
 		rl.EndDrawing()
@@ -233,9 +242,7 @@ make_wall :: proc(r: Rect) {
 		maskBits = u32(bit_set[Collision_Category] { .Round_Cat, .Long_Cat }),
 	}
 
-	fmt.println(shape_def.filter)
 	w.shape = b2.CreatePolygonShape(w.body, shape_def, box)
-
 	append(&g_mem.walls, w)
 }
 
@@ -253,7 +260,7 @@ init :: proc() {
 	g_mem^ = Game_Memory {
 		atlas = rl.LoadTextureFromImage(atlas_image),
 		long_cat_spawns = 9,
-		tuna = {10, 0},
+		tuna = {10, -2},
 	}
 
 	rl.UnloadImage(atlas_image)
@@ -270,10 +277,13 @@ init :: proc() {
 			for w in level.walls {
 				make_wall(w)
 			}
+
+			g_mem.tuna = level.tuna_pos
+			g_mem.starting_pos = level.starting_pos
 		}
 	}
 
-	g_mem.rc = round_cat_make()
+	g_mem.rc = round_cat_make(g_mem.starting_pos)
 	g_mem.lc.state = .Not_Spawned
 
 	game_hot_reloaded(g_mem)
