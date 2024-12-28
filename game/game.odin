@@ -151,15 +151,7 @@ vec2_flip :: proc(p: Vec2) -> Vec2 {
 	}
 }
 
-@(export)
-game_update :: proc() -> bool {
-	update()
-	draw()
-	return !rl.WindowShouldClose()
-}
-
-@(export)
-game_init_window :: proc() {
+init_window :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
 	rl.InitWindow(1280, 720, "The Legend of Tuna")
 	rl.SetWindowPosition(200, 200)
@@ -202,8 +194,7 @@ make_wall :: proc(r: Rect) {
 
 ATLAS_DATA :: #load("../atlas.png")
 
-@(export)
-game_init :: proc() {
+init :: proc() {
 	g_mem = new(Game_Memory)
 	atlas_image := rl.LoadImageFromMemory(".png", raw_data(ATLAS_DATA), i32(len(ATLAS_DATA)))
 
@@ -244,38 +235,11 @@ game_init :: proc() {
 	game_hot_reloaded(g_mem)
 }
 
-@(export)
-game_shutdown :: proc() {
+shutdown :: proc() {
 	delete(g_mem.walls)
 	free(g_mem)
 }
 
-@(export)
-game_shutdown_window :: proc() {
+shutdown_window :: proc() {
 	rl.CloseWindow()
-}
-
-@(export)
-game_memory :: proc() -> rawptr {
-	return g_mem
-}
-
-@(export)
-game_memory_size :: proc() -> int {
-	return size_of(Game_Memory)
-}
-
-@(export)
-game_hot_reloaded :: proc(mem: rawptr) {
-	g_mem = (^Game_Memory)(mem)
-}
-
-@(export)
-game_force_reload :: proc() -> bool {
-	return rl.IsKeyPressed(.F5)
-}
-
-@(export)
-game_force_restart :: proc() -> bool {
-	return rl.IsKeyPressed(.F6)
 }
