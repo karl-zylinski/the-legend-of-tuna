@@ -42,6 +42,7 @@ update :: proc() {
 	custom_context = context
 	b2.World_Step(physics_world(), 1/60.0, 4)
 
+	long_cat_update(&g_mem.lc)
 	round_cat_update(&g_mem.rc)
 }
 

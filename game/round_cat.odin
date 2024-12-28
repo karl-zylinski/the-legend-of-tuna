@@ -51,12 +51,12 @@ round_cat_draw :: proc(rc: Round_Cat) {
 }
 
 round_cat_update :: proc(rc: ^Round_Cat) {
-	if rl.IsMouseButtonPressed(.LEFT) {
+	/*if rl.IsMouseButtonPressed(.LEFT) {
 		pp := round_cat_pos(rc^)
 		mp := get_world_mouse_pos()
 
 		dist := pp - mp
 
 		b2.Body_ApplyLinearImpulseToCenter(rc.body, dist*20, true)
-	}
+	}*/
 }
