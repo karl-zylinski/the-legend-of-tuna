@@ -9,15 +9,15 @@ Round_Cat :: struct {
 }
 
 round_cat_make :: proc() -> Round_Cat {
-	player_body_def := b2.DefaultBodyDef()
-	player_body_def.type = .dynamicBody
-	player_body_def.position = {0, 0}
-	body := b2.CreateBody(g_mem.physics_world, player_body_def)
+	bd := b2.DefaultBodyDef()
+	bd.type = .dynamicBody
+	bd.position = {6, 0}
+	body := b2.CreateBody(g_mem.physics_world, bd)
 
-	shape_def := b2.DefaultShapeDef()
-	shape_def.density = 1.5
-	shape_def.friction = 0.3
-	shape_def.restitution = 0.2
+	sd := b2.DefaultShapeDef()
+	sd.density = 1.5
+	sd.friction = 0.3
+	sd.restitution = 0.2
 
 	capsule := b2.Capsule {
 		center1 = {0, -0.2},
@@ -25,7 +25,7 @@ round_cat_make :: proc() -> Round_Cat {
 		radius = 1,
 	}
 
-	shape := b2.CreateCapsuleShape(body, shape_def, capsule)
+	shape := b2.CreateCapsuleShape(body, sd, capsule)
 
 	return {
 		body = body,
@@ -34,7 +34,7 @@ round_cat_make :: proc() -> Round_Cat {
 }
 
 round_cat_pos :: proc(rc: Round_Cat) -> Vec2 {
-	return b2.Body_GetPosition(rc.body)
+	return body_pos(rc.body)
 }
 
 round_cat_draw :: proc(rc: Round_Cat) {

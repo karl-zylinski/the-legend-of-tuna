@@ -9,6 +9,7 @@ PIXEL_WINDOW_HEIGHT :: 180
 Game_Memory :: struct {
 	physics_world: b2.WorldId,
 	rc: Round_Cat,
+	lc: Long_Cat,
 	walls: [dynamic]Wall,
 	atlas: rl.Texture2D,
 }
@@ -52,6 +53,7 @@ draw :: proc() {
 
 	rl.BeginMode2D(game_camera())
 
+	long_cat_draw(g_mem.lc)
 	round_cat_draw(g_mem.rc)
 
 	for &w in g_mem.walls {
@@ -95,11 +97,6 @@ Vec2 :: [2]f32
 Rect :: rl.Rectangle
 GRAVITY :: Vec2 {0, -9.82*10}
 
-GROUND :: Rect {
-	-2, -4,
-	20, 1,
-}
-
 Wall :: struct {
 	body: b2.BodyId,
 	shape: b2.ShapeId,
@@ -141,15 +138,18 @@ init :: proc() {
 	world_def.gravity = GRAVITY
 	g_mem.physics_world = b2.CreateWorld(world_def)
 
-
-	make_wall(GROUND)
-
 	make_wall({
-		6, -10,
-		1, 20,
+		-2, -4,
+		20, 1,
 	})
 
+	/*make_wall({
+		6, -10,
+		1, 20,
+	})*/
+
 	g_mem.rc = round_cat_make()
+	g_mem.lc = long_cat_make()
 
 	game_hot_reloaded(g_mem)
 }

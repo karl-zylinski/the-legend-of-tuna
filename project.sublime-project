@@ -35,6 +35,7 @@
 	],
 	"settings":
 	{
+		"auto_complete": false,
 		"LSP":
 		{
 			"odin":
