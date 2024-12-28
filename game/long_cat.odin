@@ -26,6 +26,8 @@ Long_Cat :: struct {
 	hinge_joint: b2.JointId,
 
 	swing_timeout: f32,
+	swing_force: f32,
+	swing_dir: f32,
 }
 
 long_cat_enable_physics :: proc(lc: ^Long_Cat) {
@@ -118,6 +120,8 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 		if rl.IsMouseButtonPressed(.LEFT) {
 			lc.state = .Swinging
 			long_cat_enable_physics(lc)
+			//lc.swing_force = abs(lc.rot
+			//lc.swing_dir = math.sign(lc.rot)
 			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*60, true)
 			lc.swing_timeout = 2
 		}
