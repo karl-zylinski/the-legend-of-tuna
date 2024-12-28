@@ -82,7 +82,7 @@ long_cat_make :: proc(pos: Vec2) -> Long_Cat {
 long_cat_update :: proc(lc: ^Long_Cat) {
 	switch lc.state {
 	case .Charging:
-		mp := get_world_mouse_pos()
+		mp := get_world_mouse_pos(game_camera())
 		hinge_to_mouse := mp - lc.pos
 		angle := math.atan2(hinge_to_mouse.y, hinge_to_mouse.x) + math.PI/2
 
@@ -105,7 +105,7 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 		if rl.IsMouseButtonPressed(.LEFT) {
 			lc.state = .Swinging
 			long_cat_enable_physics(lc)
-			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*40, true)
+			b2.Body_ApplyAngularImpulse(lc.body, lc.rot*60, true)
 			lc.swing_timeout = 2
 		}
 

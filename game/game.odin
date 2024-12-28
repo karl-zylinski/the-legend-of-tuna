@@ -3,6 +3,9 @@ package game
 import b2 "box2d"
 import rl "vendor:raylib"
 import "base:runtime"
+import "core:encoding/json"
+import "core:os"
+import "core:fmt"
 
 PIXEL_WINDOW_HEIGHT :: 180
 
@@ -12,6 +15,9 @@ Game_Memory :: struct {
 	lc: Long_Cat,
 	walls: [dynamic]Wall,
 	atlas: rl.Texture2D,
+
+	editing: bool,
+	es: Editor_State,
 }
 
 atlas: rl.Texture2D
@@ -38,7 +44,47 @@ physics_world :: proc() -> b2.WorldId {
 
 custom_context: runtime.Context
 
+Level :: struct {
+	walls: []Rect,
+}
+
+dt: f32
+
 update :: proc() {
+	dt = rl.GetFrameTime()
+
+	if rl.IsKeyPressed(.F2) {
+		if g_mem.editing {
+			level := Level {
+				walls = make([]Rect, len(g_mem.walls), context.temp_allocator),
+			}
+
+			for w, i in g_mem.walls {
+				level.walls[i] = w.rect
+			}
+
+			marshal_options := json.Marshal_Options {
+				pretty = true,
+				spec = .SJSON,
+			}
+			
+			json_data, json_marshal_err := json.marshal(level, marshal_options, context.temp_allocator)
+
+			if json_marshal_err == nil {
+				if !os.write_entire_file("level.sjson", json_data) {
+					fmt.println("error writing level")
+				}
+			}
+		}
+
+		g_mem.editing = !g_mem.editing
+	}
+
+	if g_mem.editing {
+		editor_update(&g_mem.es)
+		return
+	}
+
 	custom_context = context
 	b2.World_Step(physics_world(), 1/60.0, 4)
 
@@ -48,26 +94,33 @@ update :: proc() {
 
 COLOR_WALL :: rl.Color { 16, 220, 117, 255 }
 
-draw :: proc() {
-	rl.BeginDrawing()
-	rl.ClearBackground({0, 120, 153, 255})
-
-	rl.BeginMode2D(game_camera())
-
+draw_world :: proc() {
 	long_cat_draw(g_mem.lc)
 	round_cat_draw(g_mem.rc)
 
 	for &w in g_mem.walls {
-		rl.DrawRectanglePro(rect_flip(w.rect), {0, w.rect.height}, 0, COLOR_WALL)	
+		rl.DrawRectanglePro(rect_flip(w.rect), {0, 0}, 0, COLOR_WALL)	
 	}
-
-	//debug_draw()
-	rl.EndMode2D()
-	rl.EndDrawing()
 }
 
-get_world_mouse_pos :: proc() -> Vec2 {
-	return vec2_flip(rl.GetScreenToWorld2D(rl.GetMousePosition(), game_camera()))
+draw :: proc() {
+	//debug_draw()
+	if g_mem.editing {
+		editor_draw(g_mem.es)
+	} else {
+		rl.BeginDrawing()
+		rl.ClearBackground({0, 120, 153, 255})
+		rl.BeginMode2D(game_camera())
+
+		draw_world()
+
+		rl.EndMode2D()
+		rl.EndDrawing()
+	}
+}
+
+get_world_mouse_pos :: proc(cam: rl.Camera2D) -> Vec2 {
+	return vec2_flip(rl.GetScreenToWorld2D(rl.GetMousePosition(), cam))
 }
 
 get_mouse_pos :: proc() -> Vec2 {
@@ -76,7 +129,7 @@ get_mouse_pos :: proc() -> Vec2 {
 
 rect_flip :: proc(r: Rect) -> Rect {
 	return {
-		r.x, -r.y,
+		r.x, -r.y - r.height,
 		r.width, r.height,
 	}
 }
@@ -123,6 +176,11 @@ make_wall :: proc(r: Rect) {
 	append(&g_mem.walls, w)
 }
 
+delete_wall :: proc(w: Wall) {
+	b2.DestroyShape(w.shape)
+	b2.DestroyBody(w.body)
+}
+
 ATLAS_DATA :: #load("../atlas.png")
 
 init :: proc() {
@@ -139,15 +197,16 @@ init :: proc() {
 	world_def.gravity = GRAVITY
 	g_mem.physics_world = b2.CreateWorld(world_def)
 
-	make_wall({
-		-2, -4,
-		20, 1,
-	})
+	if data, data_ok := os.read_entire_file("level.sjson", context.temp_allocator); data_ok {
+		level: Level
+		json_unmarshal_err := json.unmarshal(data, &level, .SJSON, context.temp_allocator)
 
-	/*make_wall({
-		6, -10,
-		1, 20,
-	})*/
+		if json_unmarshal_err == nil {
+			for w in level.walls {
+				make_wall(w)
+			}
+		}
+	}
 
 	g_mem.rc = round_cat_make()
 	g_mem.lc = long_cat_make({4, 1.1})

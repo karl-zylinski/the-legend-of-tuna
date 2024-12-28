@@ -10,3 +10,10 @@ remap :: proc "contextless" (old_value, old_min, old_max, new_min, new_max: $T) 
 	}
 	return clamp(((old_value - old_min) / old_range) * new_range + new_min, new_min, new_max)
 }
+
+rect_from_pos_size :: proc(p: Vec2, s: Vec2) -> Rect {
+	return Rect {
+		p.x, p.y,
+		s.x, s.y,
+	}
+}
