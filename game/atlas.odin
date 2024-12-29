@@ -27,7 +27,7 @@ LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678
 
 // A generated square in the atlas you can use with rl.SetShapesTexture to make
 // raylib shapes such as rl.DrawRectangleRec() use the atlas.
-SHAPES_TEXTURE_RECT :: Rect {56, 0, 10, 10}
+SHAPES_TEXTURE_RECT :: Rect {92, 0, 10, 10}
 
 Texture_Name :: enum {
 	None,
@@ -189,6 +189,8 @@ Tile_Id :: enum {
 }
 
 atlas_tiles := #partial [Tile_Id]Rect {
+	.T0Y0X0 = {75, 1, 16, 16},
+	.T0Y0X1 = {57, 1, 16, 16},
 }
 
 Atlas_Glyph :: struct {

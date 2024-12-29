@@ -24,6 +24,8 @@ Game_Memory :: struct {
 
 	long_cat_spawns: int,
 	won: bool,
+
+	background_shader: rl.Shader,
 }
 
 atlas: rl.Texture2D
@@ -71,7 +73,7 @@ update :: proc() {
 	dt = rl.GetFrameTime()
 	real_dt = dt
 
-	if g_mem.won || g_mem.lc.state == .Placing || g_mem.lc.state == .Charging {
+	if g_mem.won {
 		dt = 0
 	}
 
@@ -166,7 +168,16 @@ draw :: proc() {
 		editor_draw(g_mem.es)
 	} else {
 		rl.BeginDrawing()
-		rl.ClearBackground({0, 120, 153, 255})
+		time_loc := rl.GetShaderLocation(g_mem.background_shader, "time")
+		t := f32(rl.GetTime())
+		rl.SetShaderValue(g_mem.background_shader, time_loc, &t, .FLOAT)
+		rl.BeginShaderMode(g_mem.background_shader)
+
+
+
+		rl.DrawRectangleRec({0, 0, f32(rl.GetScreenWidth()), f32(rl.GetScreenHeight())}, rl.WHITE)
+		//rl.ClearBackground({0, 120, 153, 255})
+		rl.EndShaderMode()
 		rl.BeginMode2D(game_camera())
 
 		draw_world()
@@ -261,6 +272,7 @@ init :: proc() {
 		atlas = rl.LoadTextureFromImage(atlas_image),
 		long_cat_spawns = 9,
 		tuna = {10, -2},
+		background_shader = rl.LoadShader(nil, "bg_shader.glsl"),
 	}
 
 	rl.UnloadImage(atlas_image)

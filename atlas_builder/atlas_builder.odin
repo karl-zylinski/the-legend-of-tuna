@@ -50,7 +50,7 @@ ATLAS_CROP :: true
 TILESET_WIDTH :: 10
 
 // The NxN pixel size of each tile.
-TILE_SIZE :: 8
+TILE_SIZE :: 16
 
 // Add padding to tiles by adding a pixel border around it and copying  there.
 // This helps with bleeding when doing subpixel camera movements.
@@ -845,7 +845,7 @@ main :: proc() {
 			source := Rect {x + top_left.x, y + top_left.y, TILE_SIZE, TILE_SIZE}
 			dest := Rect {int(rp.x) + 1, int(rp.y) + 1, source.width, source.height}
 
-			draw_image(&atlas, t_img, source, {int(rp.x), int(rp.y)})
+			draw_image(&atlas, t_img, source, {int(rp.x) + 1, int(rp.y) + 1})
 
 			when TILE_ADD_PADDING {
 				ts :: TILE_SIZE
