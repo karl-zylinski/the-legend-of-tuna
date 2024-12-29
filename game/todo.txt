@@ -9,7 +9,9 @@ x Make long cat spawnable X times (add HUD)
 x fix fixed timestep
 
 
-- add nice tile gfx
+
+- make boxes look nicer
+- add some slopes
 - add nice bg gfx
 - multiple levels
 - sound / music
@@ -17,5 +19,5 @@ x fix fixed timestep
 
 
 no:
-
+- add nice tile gfx
 - look at squishy on impact -- rlgl scale?

@@ -27,6 +27,7 @@ Game_Memory :: struct {
 	won: bool,
 
 	background_shader: rl.Shader,
+	ground_shader: rl.Shader,
 }
 
 /*Tile :: struct {
@@ -161,9 +162,13 @@ draw_world :: proc() {
 
 	round_cat_draw(g_mem.rc)
 
+	rl.BeginShaderMode(g_mem.ground_shader)
+
 	for &w in g_mem.walls {
 		rl.DrawRectanglePro(rect_flip(w.rect), {0, 0}, 0, COLOR_WALL)	
 	}
+
+	rl.EndShaderMode()
 	
 	long_cat_draw(g_mem.lc)
 }
@@ -175,8 +180,11 @@ draw :: proc() {
 	} else {
 		rl.BeginDrawing()
 		time_loc := rl.GetShaderLocation(g_mem.background_shader, "time")
+		camera_pos_loc := rl.GetShaderLocation(g_mem.background_shader, "cameraPos")
 		t := f32(rl.GetTime())
 		rl.SetShaderValue(g_mem.background_shader, time_loc, &t, .FLOAT)
+		game_cam := game_camera()
+		rl.SetShaderValue(g_mem.background_shader, camera_pos_loc, &game_cam.target, .VEC2)
 		rl.BeginShaderMode(g_mem.background_shader)
 
 
@@ -184,7 +192,7 @@ draw :: proc() {
 		rl.DrawRectangleRec({0, 0, f32(rl.GetScreenWidth()), f32(rl.GetScreenHeight())}, rl.WHITE)
 		//rl.ClearBackground({0, 120, 153, 255})
 		rl.EndShaderMode()
-		rl.BeginMode2D(game_camera())
+		rl.BeginMode2D(game_cam)
 
 		draw_world()
 
@@ -279,6 +287,7 @@ init :: proc() {
 		long_cat_spawns = 9,
 		tuna = {10, -2},
 		background_shader = rl.LoadShader(nil, "bg_shader.glsl"),
+		ground_shader = rl.LoadShader("ground_shader_vs.glsl", "ground_shader.glsl"),
 	}
 
 	rl.UnloadImage(atlas_image)
