@@ -11,9 +11,10 @@ x fix fixed timestep
 
 
 x make boxes look nicer
-- add some slopes
-- add nice bg gfx
+x add some slopes
 - multiple levels
+- menu choose level
+- add nice bg gfx
 - sound / music
 - make boxes look even nicer
 

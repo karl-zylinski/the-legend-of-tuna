@@ -25,15 +25,33 @@ Game_Memory :: struct {
 
 	long_cat_spawns: int,
 	won: bool,
+	won_at: f64,
 
 	background_shader: rl.Shader,
 	ground_shader: rl.Shader,
+
+	current_level: int,
+	finished: bool,
 }
 
 /*Tile :: struct {
 	tile: Tile_Id,
 	pos: [2]int,
 }*/
+
+current_level_name :: proc() -> string {
+	if g_mem.current_level < len(levels) {
+		return levels[g_mem.current_level]
+	}
+
+	return ""
+}
+
+levels := [?]string {
+	"level.sjson",
+	"level2.sjson",
+	"level3.sjson",
+}
 
 atlas: rl.Texture2D
 g_mem: ^Game_Memory
@@ -50,7 +68,7 @@ game_camera :: proc() -> rl.Camera2D {
 
 	return {
 		zoom = h/PIXEL_WINDOW_HEIGHT*GAME_SCALE,
-		target = vec2_flip(round_cat_pos(g_mem.rc)),
+		target = vec2_flip(round_cat_pos(g_mem.rc) + {0, 1.5}),
 		offset = { w/2, h/2 },
 	}
 }
@@ -81,12 +99,36 @@ Level :: struct {
 dt: f32
 real_dt: f32
 
+got_tuna :: proc() {
+	g_mem.won = true
+	g_mem.won_at = rl.GetTime()
+}
+
 update :: proc() {
 	dt = rl.GetFrameTime()
 	real_dt = dt
 
+	if rl.IsKeyPressed(.ESCAPE) {
+		rl.CloseWindow()
+	}
+
+	if g_mem.finished {
+		return
+	}
+
 	if g_mem.won {
 		dt = 0
+
+		if rl.IsMouseButtonPressed(.LEFT) && g_mem.won_at + 0.5 > rl.GetTime() {
+			g_mem.won = false
+
+			if g_mem.current_level == len(levels) - 1 {
+				g_mem.finished = true
+				g_mem.won_at = rl.GetTime()
+			} else {
+				load_level(g_mem.current_level + 1)	
+			}
+		}
 	}
 
 	if rl.IsKeyPressed(.F2) {
@@ -110,8 +152,12 @@ update :: proc() {
 			json_data, json_marshal_err := json.marshal(level, marshal_options, context.temp_allocator)
 
 			if json_marshal_err == nil {
-				if !os.write_entire_file("level.sjson", json_data) {
-					fmt.println("error writing level")
+				c := current_level_name()
+
+				if c != "" {
+					if !os.write_entire_file(current_level_name(), json_data) {
+						fmt.println("error writing level")
+					}
 				}
 			}
 		}
@@ -122,6 +168,21 @@ update :: proc() {
 	if g_mem.editing {
 		editor_update(&g_mem.es)
 		return
+	}
+
+
+	when ODIN_DEBUG {
+		if rl.IsKeyPressed(.ONE) {
+			load_level(0)
+		}
+
+		if rl.IsKeyPressed(.TWO) {
+			load_level(1)
+		}
+
+		if rl.IsKeyPressed(.THREE) {
+			load_level(2)
+		}
 	}
 
 	custom_context = context
@@ -139,8 +200,8 @@ update :: proc() {
 	round_cat_update(&g_mem.rc)
 
 	if rl.IsMouseButtonPressed(.LEFT) {
-		if (g_mem.lc.state == .Done || g_mem.lc.state == .Not_Spawned) && g_mem.long_cat_spawns > 0 {
-			g_mem.long_cat_spawns -= 1
+		if (g_mem.lc.state == .Done || g_mem.lc.state == .Not_Spawned) {
+			g_mem.long_cat_spawns += 1
 
 			if g_mem.lc.state == .Done {
 				long_cat_delete(g_mem.lc)
@@ -148,6 +209,10 @@ update :: proc() {
 
 			g_mem.lc = long_cat_make(get_world_mouse_pos(game_camera()))
 		}
+	}
+
+	if round_cat_pos(g_mem.rc).y < -300 {
+		load_level(g_mem.current_level)
 	}
 }
 
@@ -194,8 +259,6 @@ draw :: proc() {
 		rl.SetShaderValue(g_mem.background_shader, camera_pos_loc, &game_cam.target, .VEC2)
 		rl.BeginShaderMode(g_mem.background_shader)
 
-
-
 		rl.DrawRectangleRec({0, 0, f32(rl.GetScreenWidth()), f32(rl.GetScreenHeight())}, rl.WHITE)
 		//rl.ClearBackground({0, 120, 153, 255})
 		rl.EndShaderMode()
@@ -208,7 +271,9 @@ draw :: proc() {
 
 		rl.DrawText(fmt.ctprintf("%v", g_mem.long_cat_spawns), 10, PIXEL_WINDOW_HEIGHT - 30, 20, rl.WHITE)
 
-		if g_mem.won {
+		if g_mem.finished {
+			rl.DrawText("YOU DID IT!! YOU FOUND\nTHE THREE MAGICAL\nTUNA CANS!!!\n\nGOOD BYE", 40, 40, 20, rl.WHITE)
+		} else if g_mem.won {
 			rl.DrawText("YAY!!! TUNA", 40, 40, 40, rl.WHITE)
 		}
 
@@ -288,25 +353,32 @@ delete_wall :: proc(w: Wall) {
 
 ATLAS_DATA :: #load("../atlas.png")
 
-init :: proc() {
-	g_mem = new(Game_Memory)
-	atlas_image := rl.LoadImageFromMemory(".png", raw_data(ATLAS_DATA), i32(len(ATLAS_DATA)))
-
-	g_mem^ = Game_Memory {
-		atlas = rl.LoadTextureFromImage(atlas_image),
-		long_cat_spawns = 9,
-		tuna = {10, -2},
-		background_shader = rl.LoadShader(nil, "bg_shader.glsl"),
-		ground_shader = rl.LoadShader("ground_shader_vs.glsl", "ground_shader.glsl"),
+delete_current_level :: proc() {
+	if g_mem.physics_world != {} {
+		b2.DestroyWorld(g_mem.physics_world)
 	}
+	delete(g_mem.walls)
+}
 
-	rl.UnloadImage(atlas_image)
+load_level :: proc(level_idx: int) -> bool {
+	delete_current_level()
+
+	g_mem.current_level = level_idx
+	current_level_name := current_level_name()
+
+	if current_level_name == "" {
+		return false
+	}
 
 	world_def := b2.DefaultWorldDef()
 	world_def.gravity = GRAVITY
+	world_def.enableContinous = true
 	g_mem.physics_world = b2.CreateWorld(world_def)
 
-	if data, data_ok := os.read_entire_file("level.sjson", context.temp_allocator); data_ok {
+	g_mem.walls = {}
+	g_mem.long_cat_spawns = 0
+
+	if data, data_ok := os.read_entire_file(current_level_name, context.temp_allocator); data_ok {
 		level: Level
 		json_unmarshal_err := json.unmarshal(data, &level, .SJSON, context.temp_allocator)
 
@@ -322,6 +394,24 @@ init :: proc() {
 
 	g_mem.rc = round_cat_make(g_mem.starting_pos)
 	g_mem.lc.state = .Not_Spawned
+	return true
+}
+
+
+init :: proc() {
+	g_mem = new(Game_Memory)
+	atlas_image := rl.LoadImageFromMemory(".png", raw_data(ATLAS_DATA), i32(len(ATLAS_DATA)))
+
+	g_mem^ = Game_Memory {
+		atlas = rl.LoadTextureFromImage(atlas_image),
+		tuna = {10, -2},
+		background_shader = rl.LoadShader(nil, "bg_shader.glsl"),
+		ground_shader = rl.LoadShader("ground_shader_vs.glsl", "ground_shader.glsl"),
+	}
+
+	rl.UnloadImage(atlas_image)
+
+	load_level(0)
 
 	game_hot_reloaded(g_mem)
 }

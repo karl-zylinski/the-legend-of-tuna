@@ -97,7 +97,7 @@ round_cat_update :: proc(rc: ^Round_Cat) {
 	coll := b2.CollideCapsuleAndCircle(b2.Shape_GetCapsule(rc.shape), b2.Body_GetTransform(rc.body), tuna_circle, tuna_circle_transf)
 
 	if coll.pointCount > 0 {
-		g_mem.won = true
+		got_tuna()
 	}
 
 	contact_cap := b2.Body_GetContactCapacity(rc.body)
