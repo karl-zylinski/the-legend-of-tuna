@@ -16,6 +16,7 @@ Game_Memory :: struct {
 	lc: Long_Cat,
 	tuna: Vec2,
 	walls: [dynamic]Wall,
+	//tiles: [dynamic]Tile,
 	atlas: rl.Texture2D,
 
 	editing: bool,
@@ -27,6 +28,11 @@ Game_Memory :: struct {
 
 	background_shader: rl.Shader,
 }
+
+/*Tile :: struct {
+	tile: Tile_Id,
+	pos: [2]int,
+}*/
 
 atlas: rl.Texture2D
 g_mem: ^Game_Memory
