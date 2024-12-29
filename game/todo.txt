@@ -8,8 +8,14 @@ x Make long cat spawning pause (or slow down game a lot)
 x Make long cat spawnable X times (add HUD)
 x fix fixed timestep
 
-- look at squishy on impact -- rlgl scale?
+
 - add nice tile gfx
 - add nice bg gfx
 - multiple levels
 - sound / music
+
+
+
+no:
+
+- look at squishy on impact -- rlgl scale?

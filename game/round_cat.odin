@@ -70,7 +70,7 @@ round_cat_draw :: proc(rc: Round_Cat) {
 	source := atlas_textures[.Round_Cat].rect
 	dest := draw_dest_rect(body_pos(rc.body), source)
 
-	t := f32(remap(rl.GetTime(), rc.squish_start, rc.squish_start + 0.5, 0, 1))
+	/*t := f32(remap(rl.GetTime(), rc.squish_start, rc.squish_start + 0.5, 0, 1))
 
 	sq := math.lerp(rc.squish_direction * rc.squish_amount, Vec2{}, smoothstart5(t))
 
@@ -79,7 +79,7 @@ round_cat_draw :: proc(rc: Round_Cat) {
 	dest.x += sq.x*2
 	dest.y += sq.y*2
 
-	// rlgl scale?
+	// rlgl scale?*/
 
 	rl.DrawTexturePro(atlas, source, dest, {dest.width/2, dest.height/2}, -a*rl.RAD2DEG, rl.WHITE)
 }
@@ -106,7 +106,6 @@ round_cat_update :: proc(rc: ^Round_Cat) {
 
 	for &c in contact_data {
 		vel := c.manifold.points[0].normalVelocity
-		fmt.println(vel)
 
 		if abs(vel) > 5 && rc.squish_start + 1 < rl.GetTime() {
 			squish_amount := remap(abs(vel), 5, 40, 0, 0.3)
