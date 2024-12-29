@@ -67,8 +67,13 @@ physics_world :: proc() -> b2.WorldId {
 
 custom_context: runtime.Context
 
+Level_Wall :: struct {
+	rect: Rect,
+	rot: f32,
+}
+
 Level :: struct {
-	walls: []Rect,
+	walls: []Level_Wall,
 	tuna_pos: Vec2,
 	starting_pos: Vec2,
 }
@@ -87,13 +92,14 @@ update :: proc() {
 	if rl.IsKeyPressed(.F2) {
 		if g_mem.editing {
 			level := Level {
-				walls = make([]Rect, len(g_mem.walls), context.temp_allocator),
+				walls = make([]Level_Wall, len(g_mem.walls), context.temp_allocator),
 				tuna_pos = g_mem.tuna,
 				starting_pos = g_mem.starting_pos,
 			}
 
 			for w, i in g_mem.walls {
-				level.walls[i] = w.rect
+				level.walls[i].rect = w.rect
+				level.walls[i].rot = w.rot
 			}
 
 			marshal_options := json.Marshal_Options {
@@ -165,7 +171,8 @@ draw_world :: proc() {
 	rl.BeginShaderMode(g_mem.ground_shader)
 
 	for &w in g_mem.walls {
-		rl.DrawRectanglePro(rect_flip(w.rect), {0, 0}, 0, COLOR_WALL)	
+		mid := Vec2 {w.rect.width/2, w.rect.height/2}
+		rl.DrawRectanglePro(rect_offset(rect_flip(w.rect), mid), mid, -w.rot*RAD2DEG, COLOR_WALL)
 	}
 
 	rl.EndShaderMode()
@@ -246,17 +253,20 @@ Wall :: struct {
 	body: b2.BodyId,
 	shape: b2.ShapeId,
 	rect: Rect,
+	rot: f32,
 }
 
 WORLD_SCALE :: 10.0
 
-make_wall :: proc(r: Rect) {
+make_wall :: proc(r: Rect, rot: f32) {
 	w := Wall {
 		rect = r,
+		rot = rot,
 	}
 
 	body_def := b2.DefaultBodyDef()
 	body_def.position = b2.Vec2{r.x + r.width/2, r.y + r.height/2}
+	body_def.rotation = b2.MakeRot(rot)
 	w.body = b2.CreateBody(physics_world(), body_def)
 
 	box := b2.MakeBox((r.width/2), (r.height/2))
@@ -302,7 +312,7 @@ init :: proc() {
 
 		if json_unmarshal_err == nil {
 			for w in level.walls {
-				make_wall(w)
+				make_wall(w.rect, w.rot)
 			}
 
 			g_mem.tuna = level.tuna_pos

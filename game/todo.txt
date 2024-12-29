@@ -10,11 +10,12 @@ x fix fixed timestep
 
 
 
-- make boxes look nicer
+x make boxes look nicer
 - add some slopes
 - add nice bg gfx
 - multiple levels
 - sound / music
+- make boxes look even nicer
 
 
 

@@ -12,6 +12,7 @@ Editor_State :: struct {
 	placing_start: Vec2,
 	editor_camera_pos: Vec2,
 	editor_camera_zoom: f32,
+	moving_wall: Maybe(int),
 }
 
 editor_camera :: proc(es: Editor_State) -> rl.Camera2D {
@@ -58,16 +59,46 @@ editor_update :: proc(es: ^Editor_State) {
 
 	cam := editor_camera(es^)
 
-	if es.placing_box {
+	if moving_wall_idx, moving_wall := es.moving_wall.?; moving_wall {
+		mp := get_world_mouse_pos(cam)
+		w := &g_mem.walls[moving_wall_idx]
+		mid := Vec2 { w.rect.width / 2, w.rect.height / 2}
+		w.rect.x = mp.x - mid.x
+		w.rect.y = mp.y - mid.y
+		t := b2.Body_GetTransform(w.body)
+		b2.Body_SetTransform(w.body, mp, t.q)
+
+		if rl.IsMouseButtonReleased(.LEFT) {
+			es.moving_wall = nil
+		}
+	} else if es.placing_box {
 		if rl.IsMouseButtonReleased(.LEFT) {
 			b := editor_get_box(es^)
-			make_wall(b)
+
+			if b.width != 0 && b.height != 0 {
+				make_wall(b, 0)
+			}
+			
 			es.placing_box = false
 		}
 	} else {
 		if rl.IsMouseButtonPressed(.LEFT) {
-			es.placing_box = true
-			es.placing_start = get_world_mouse_pos(cam)
+			for &w, i in g_mem.walls {
+				mp := get_world_mouse_pos(cam)
+				p := b2.Shape_GetPolygon(w.shape)
+				t := b2.Body_GetTransform(w.body)
+				p = b2.TransformPolygon(t, p)
+
+				if b2.PointInPolygon(mp, p) {
+					es.moving_wall = i
+					break
+				}
+			}	
+
+			if es.moving_wall == nil {
+				es.placing_box = true
+				es.placing_start = get_world_mouse_pos(cam)
+			}
 		}
 
 		if rl.IsKeyPressed(.ONE) {
@@ -86,6 +117,21 @@ editor_update :: proc(es: ^Editor_State) {
 				if rl.CheckCollisionPointRec(mp, w.rect) {
 					delete_wall(w)
 					unordered_remove(&g_mem.walls, i)
+					break
+				}
+			}	
+		}
+
+		if rl.IsKeyDown(.R) {
+			for &w in g_mem.walls {
+				mp := get_world_mouse_pos(cam)
+				p := b2.Shape_GetPolygon(w.shape)
+				t := b2.Body_GetTransform(w.body)
+				p = b2.TransformPolygon(t, p)
+
+				if b2.PointInPolygon(mp, p) {
+					w.rot += rl.IsKeyDown(.LEFT_SHIFT) ? real_dt : -real_dt
+					b2.Body_SetTransform(w.body, t.p, b2.MakeRot(w.rot))
 					break
 				}
 			}	
@@ -127,8 +173,12 @@ editor_draw :: proc(es: Editor_State) {
 		for w in g_mem.walls {
 			mp := get_world_mouse_pos(editor_camera(es))
 
-			if rl.CheckCollisionPointRec(mp, w.rect) {
-				rl.DrawRectangleRec(rect_flip(w.rect), {255, 0, 0, 120})
+			p := b2.Shape_GetPolygon(w.shape)
+			p = b2.TransformPolygon(b2.Body_GetTransform(w.body), p)
+
+			if b2.PointInPolygon(mp, p) {
+				mid := Vec2 {w.rect.width/2, w.rect.height/2}
+				rl.DrawRectanglePro(rect_offset(rect_flip(w.rect), mid), mid, -w.rot*RAD2DEG, {255, 0, 0, 120})
 				break
 			}
 		}
@@ -136,4 +186,13 @@ editor_draw :: proc(es: Editor_State) {
 
 	rl.EndMode2D()
 	rl.EndDrawing()
+}
+
+rect_offset :: proc(r: Rect, o: Vec2) -> Rect {
+	return {
+		r.x + o.x,
+		r.y + o.y,
+		r.width,
+		r.height,
+	}
 }
