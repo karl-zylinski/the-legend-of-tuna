@@ -12,7 +12,8 @@ x fix fixed timestep
 
 x make boxes look nicer
 x add some slopes
-- multiple levels
+x multiple levels
+- different colors for different levels
 - menu choose level
 - add nice bg gfx
 - sound / music
