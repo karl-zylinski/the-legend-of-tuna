@@ -69,7 +69,7 @@ LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz12345678
 FONT_FILENAME :: "font.ttf"
 
 // The font size of letters extracted from font
-FONT_SIZE :: 32
+FONT_SIZE :: 64
 
 
 // ---------------------

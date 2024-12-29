@@ -96,7 +96,7 @@ round_cat_update :: proc(rc: ^Round_Cat) {
 
 	coll := b2.CollideCapsuleAndCircle(b2.Shape_GetCapsule(rc.shape), b2.Body_GetTransform(rc.body), tuna_circle, tuna_circle_transf)
 
-	if coll.pointCount > 0 {
+	if !g_mem.won && coll.pointCount > 0 {
 		got_tuna()
 	}
 
@@ -107,11 +107,8 @@ round_cat_update :: proc(rc: ^Round_Cat) {
 	for &c in contact_data {
 		vel := c.manifold.points[0].normalVelocity
 
-		if abs(vel) > 5 && rc.squish_start + 1 < rl.GetTime() {
-			squish_amount := remap(abs(vel), 5, 40, 0, 0.3)
-			rc.squish_amount = squish_amount
-			rc.squish_direction = c.shapeIdA == rc.shape ? -c.manifold.normal : c.manifold.normal
-			rc.squish_start = rl.GetTime()
+		if abs(vel) > 10 && c.shapeIdA != g_mem.lc.shape && c.shapeIdB != g_mem.lc.shape {
+			rl.PlaySound(g_mem.land_sound)
 		}
 	}
 

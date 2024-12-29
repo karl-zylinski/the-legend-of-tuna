@@ -22,12 +22,12 @@ Just make sure you have something along those lines the same package as this fil
 */
 
 TEXTURE_ATLAS_FILENAME :: "atlas.png"
-ATLAS_FONT_SIZE :: 32
+ATLAS_FONT_SIZE :: 64
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]-+"
 
 // A generated square in the atlas you can use with rl.SetShapesTexture to make
 // raylib shapes such as rl.DrawRectangleRec() use the atlas.
-SHAPES_TEXTURE_RECT :: Rect {92, 0, 10, 10}
+SHAPES_TEXTURE_RECT :: Rect {63, 92, 10, 10}
 
 Texture_Name :: enum {
 	None,
@@ -53,9 +53,9 @@ Atlas_Texture :: struct {
 
 atlas_textures: [Texture_Name]Atlas_Texture = {
 	.None = {},
-	.Round_Cat = { rect = {10, 0, 20, 24}, offset_top = 0, offset_right = 0, offset_bottom = 0, offset_left = 0, document_size = {20, 24}, duration = 0.100},
+	.Round_Cat = { rect = {96, 67, 20, 24}, offset_top = 0, offset_right = 0, offset_bottom = 0, offset_left = 0, document_size = {20, 24}, duration = 0.100},
 	.Long_Cat = { rect = {0, 0, 9, 46}, offset_top = 0, offset_right = 0, offset_bottom = 0, offset_left = 0, document_size = {9, 46}, duration = 0.100},
-	.Tuna = { rect = {31, 0, 24, 20}, offset_top = 0, offset_right = 0, offset_bottom = 0, offset_left = 0, document_size = {24, 20}, duration = 0.100},
+	.Tuna = { rect = {182, 91, 24, 20}, offset_top = 0, offset_right = 0, offset_bottom = 0, offset_left = 0, document_size = {24, 20}, duration = 0.100},
 }
 
 Animation_Name :: enum {
@@ -189,8 +189,8 @@ Tile_Id :: enum {
 }
 
 atlas_tiles := #partial [Tile_Id]Rect {
-	.T0Y0X0 = {75, 1, 16, 16},
-	.T0Y0X1 = {57, 1, 16, 16},
+	.T0Y0X0 = {480, 92, 16, 16},
+	.T0Y0X1 = {208, 92, 16, 16},
 }
 
 Atlas_Glyph :: struct {
@@ -202,4 +202,77 @@ Atlas_Glyph :: struct {
 }
 
 atlas_glyphs: []Atlas_Glyph = {
+	{ rect = {292, 35, 25, 30}, value = 'A', offset_x = 0, offset_y = 16, advance_x = 24},
+	{ rect = {74, 37, 21, 30}, value = 'B', offset_x = 4, offset_y = 16, advance_x = 26},
+	{ rect = {266, 1, 23, 32}, value = 'C', offset_x = 2, offset_y = 15, advance_x = 25},
+	{ rect = {169, 36, 22, 30}, value = 'D', offset_x = 4, offset_y = 16, advance_x = 27},
+	{ rect = {273, 67, 18, 30}, value = 'E', offset_x = 4, offset_y = 16, advance_x = 23},
+	{ rect = {419, 35, 18, 30}, value = 'F', offset_x = 4, offset_y = 16, advance_x = 22},
+	{ rect = {291, 1, 23, 32}, value = 'G', offset_x = 2, offset_y = 15, advance_x = 27},
+	{ rect = {145, 36, 22, 30}, value = 'H', offset_x = 4, offset_y = 16, advance_x = 29},
+	{ rect = {504, 34, 4, 30}, value = 'I', offset_x = 4, offset_y = 16, advance_x = 11},
+	{ rect = {210, 35, 17, 31}, value = 'J', offset_x = 1, offset_y = 16, advance_x = 21},
+	{ rect = {395, 35, 22, 30}, value = 'K', offset_x = 4, offset_y = 16, advance_x = 26},
+	{ rect = {293, 67, 17, 30}, value = 'L', offset_x = 4, offset_y = 16, advance_x = 21},
+	{ rect = {265, 35, 25, 30}, value = 'M', offset_x = 4, offset_y = 16, advance_x = 32},
+	{ rect = {121, 36, 22, 30}, value = 'N', offset_x = 4, offset_y = 16, advance_x = 29},
+	{ rect = {210, 1, 26, 32}, value = 'O', offset_x = 2, offset_y = 15, advance_x = 29},
+	{ rect = {1, 48, 20, 30}, value = 'P', offset_x = 4, offset_y = 16, advance_x = 25},
+	{ rect = {23, 1, 27, 39}, value = 'Q', offset_x = 2, offset_y = 15, advance_x = 29},
+	{ rect = {46, 42, 21, 30}, value = 'R', offset_x = 4, offset_y = 16, advance_x = 25},
+	{ rect = {316, 1, 22, 32}, value = 'S', offset_x = 1, offset_y = 15, advance_x = 24},
+	{ rect = {97, 36, 22, 30}, value = 'T', offset_x = 1, offset_y = 16, advance_x = 24},
+	{ rect = {439, 1, 23, 31}, value = 'U', offset_x = 3, offset_y = 16, advance_x = 28},
+	{ rect = {319, 35, 24, 30}, value = 'V', offset_x = 0, offset_y = 16, advance_x = 23},
+	{ rect = {229, 35, 34, 30}, value = 'W', offset_x = 1, offset_y = 16, advance_x = 35},
+	{ rect = {345, 35, 23, 30}, value = 'X', offset_x = 0, offset_y = 16, advance_x = 23},
+	{ rect = {370, 35, 23, 30}, value = 'Y', offset_x = -1, offset_y = 16, advance_x = 21},
+	{ rect = {23, 42, 21, 30}, value = 'Z', offset_x = 2, offset_y = 16, advance_x = 24},
+	{ rect = {421, 67, 18, 24}, value = 'a', offset_x = 2, offset_y = 23, advance_x = 22},
+	{ rect = {97, 1, 20, 33}, value = 'b', offset_x = 3, offset_y = 14, advance_x = 24},
+	{ rect = {441, 67, 18, 24}, value = 'c', offset_x = 2, offset_y = 23, advance_x = 20},
+	{ rect = {119, 1, 20, 33}, value = 'd', offset_x = 2, offset_y = 14, advance_x = 24},
+	{ rect = {400, 67, 19, 24}, value = 'e', offset_x = 2, offset_y = 23, advance_x = 22},
+	{ rect = {185, 1, 14, 33}, value = 'f', offset_x = 1, offset_y = 13, advance_x = 13},
+	{ rect = {74, 1, 21, 34}, value = 'g', offset_x = 2, offset_y = 23, advance_x = 22},
+	{ rect = {384, 1, 19, 32}, value = 'h', offset_x = 3, offset_y = 14, advance_x = 24},
+	{ rect = {432, 1, 5, 32}, value = 'i', offset_x = 3, offset_y = 14, advance_x = 11},
+	{ rect = {11, 1, 10, 42}, value = 'j', offset_x = -2, offset_y = 14, advance_x = 11},
+	{ rect = {363, 1, 19, 32}, value = 'k', offset_x = 3, offset_y = 14, advance_x = 22},
+	{ rect = {201, 1, 7, 33}, value = 'l', offset_x = 3, offset_y = 14, advance_x = 11},
+	{ rect = {480, 67, 31, 23}, value = 'm', offset_x = 3, offset_y = 23, advance_x = 37},
+	{ rect = {118, 68, 19, 23}, value = 'n', offset_x = 3, offset_y = 23, advance_x = 24},
+	{ rect = {377, 67, 21, 24}, value = 'o', offset_x = 2, offset_y = 23, advance_x = 24},
+	{ rect = {163, 1, 20, 33}, value = 'p', offset_x = 3, offset_y = 23, advance_x = 24},
+	{ rect = {141, 1, 20, 33}, value = 'q', offset_x = 2, offset_y = 23, advance_x = 24},
+	{ rect = {159, 68, 13, 23}, value = 'r', offset_x = 3, offset_y = 23, advance_x = 15},
+	{ rect = {461, 67, 17, 24}, value = 's', offset_x = 1, offset_y = 23, advance_x = 18},
+	{ rect = {193, 36, 14, 30}, value = 't', offset_x = 1, offset_y = 17, advance_x = 15},
+	{ rect = {139, 68, 18, 23}, value = 'u', offset_x = 3, offset_y = 24, advance_x = 24},
+	{ rect = {69, 69, 21, 22}, value = 'v', offset_x = 0, offset_y = 24, advance_x = 20},
+	{ rect = {183, 68, 31, 22}, value = 'w', offset_x = 1, offset_y = 24, advance_x = 32},
+	{ rect = {23, 74, 20, 22}, value = 'x', offset_x = 0, offset_y = 24, advance_x = 20},
+	{ rect = {340, 1, 21, 32}, value = 'y', offset_x = 0, offset_y = 24, advance_x = 20},
+	{ rect = {45, 74, 17, 22}, value = 'z', offset_x = 1, offset_y = 24, advance_x = 19},
+	{ rect = {358, 67, 17, 29}, value = '1', offset_x = 3, offset_y = 17, advance_x = 22},
+	{ rect = {251, 67, 20, 30}, value = '2', offset_x = 1, offset_y = 16, advance_x = 22},
+	{ rect = {486, 1, 20, 31}, value = '3', offset_x = 1, offset_y = 16, advance_x = 22},
+	{ rect = {312, 67, 22, 29}, value = '4', offset_x = 0, offset_y = 17, advance_x = 22},
+	{ rect = {229, 67, 20, 30}, value = '5', offset_x = 1, offset_y = 17, advance_x = 22},
+	{ rect = {483, 34, 19, 31}, value = '6', offset_x = 2, offset_y = 16, advance_x = 22},
+	{ rect = {336, 67, 20, 29}, value = '7', offset_x = 1, offset_y = 17, advance_x = 22},
+	{ rect = {464, 1, 20, 31}, value = '8', offset_x = 1, offset_y = 16, advance_x = 22},
+	{ rect = {461, 34, 20, 31}, value = '9', offset_x = 1, offset_y = 16, advance_x = 22},
+	{ rect = {439, 34, 20, 31}, value = '0', offset_x = 1, offset_y = 16, advance_x = 22},
+	{ rect = {405, 1, 16, 32}, value = '?', offset_x = 1, offset_y = 15, advance_x = 19},
+	{ rect = {423, 1, 7, 32}, value = '!', offset_x = 3, offset_y = 15, advance_x = 12},
+	{ rect = {238, 1, 26, 32}, value = '&', offset_x = 1, offset_y = 15, advance_x = 27},
+	{ rect = {75, 93, 7, 7}, value = '.', offset_x = 2, offset_y = 40, advance_x = 11},
+	{ rect = {498, 92, 7, 14}, value = ',', offset_x = 2, offset_y = 40, advance_x = 11},
+	{ rect = {98, 93, 22, 3}, value = '_', offset_x = 0, offset_y = 49, advance_x = 22},
+	{ rect = {174, 68, 7, 23}, value = ':', offset_x = 2, offset_y = 24, advance_x = 11},
+	{ rect = {52, 1, 9, 39}, value = '[', offset_x = 4, offset_y = 14, advance_x = 13},
+	{ rect = {63, 1, 9, 39}, value = ']', offset_x = 1, offset_y = 14, advance_x = 13},
+	{ rect = {84, 93, 12, 4}, value = '-', offset_x = 1, offset_y = 33, advance_x = 13},
+	{ rect = {1, 80, 20, 21}, value = '+', offset_x = 1, offset_y = 21, advance_x = 22},
 }

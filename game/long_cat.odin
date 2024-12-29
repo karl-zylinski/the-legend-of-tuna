@@ -136,14 +136,17 @@ long_cat_update :: proc(lc: ^Long_Cat) {
 		contact_cap := b2.Body_GetContactCapacity(lc.body)
 		contact_data := make([]b2.ContactData, contact_cap, context.temp_allocator)
 		contact_data = b2.Body_GetContactData(lc.body, contact_data)
-
-		for &c in contact_data {
-			a_is_rc := c.shapeIdA == g_mem.rc.shape
-			b_is_rc := c.shapeIdB == g_mem.rc.shape
-			if a_is_rc || b_is_rc {
-				lc.swing_force = 0
-				lc.hit_round_cat = true
-				break
+ 	
+ 		if !lc.hit_round_cat {
+			for &c in contact_data {
+				a_is_rc := c.shapeIdA == g_mem.rc.shape
+				b_is_rc := c.shapeIdB == g_mem.rc.shape
+				if a_is_rc || b_is_rc {
+					lc.swing_force = 0
+					lc.hit_round_cat = true
+					rl.PlaySound(g_mem.hit_sound)
+					break
+				}
 			}
 		}
 

@@ -6,6 +6,7 @@ import "base:runtime"
 import "core:encoding/json"
 import "core:os"
 import "core:fmt"
+import "core:mem"
 
 PIXEL_WINDOW_HEIGHT :: 180
 
@@ -32,6 +33,13 @@ Game_Memory :: struct {
 
 	current_level: int,
 	finished: bool,
+	font: rl.Font,
+
+
+	// sounds
+	hit_sound: rl.Sound,
+	land_sound: rl.Sound,
+	win_sound: rl.Sound,
 }
 
 /*Tile :: struct {
@@ -55,9 +63,11 @@ levels := [?]string {
 
 atlas: rl.Texture2D
 g_mem: ^Game_Memory
+font: rl.Font
 
 refresh_globals :: proc() {
 	atlas = g_mem.atlas
+	font = g_mem.font
 }
 
 GAME_SCALE :: 10
@@ -102,6 +112,7 @@ real_dt: f32
 got_tuna :: proc() {
 	g_mem.won = true
 	g_mem.won_at = rl.GetTime()
+	rl.PlaySound(g_mem.win_sound)
 }
 
 update :: proc() {
@@ -211,7 +222,7 @@ update :: proc() {
 		}
 	}
 
-	if round_cat_pos(g_mem.rc).y < 300 {
+	if round_cat_pos(g_mem.rc).y < -300 {
 		load_level(g_mem.current_level)
 	}
 }
@@ -270,12 +281,13 @@ draw :: proc() {
 		rl.EndMode2D()
 		rl.BeginMode2D(ui_camera())
 
-		rl.DrawText(fmt.ctprintf("%v", g_mem.long_cat_spawns), 10, PIXEL_WINDOW_HEIGHT - 30, 20, rl.WHITE)
+
+		rl.DrawTextEx(font, fmt.ctprintf("%v", g_mem.long_cat_spawns), {10, PIXEL_WINDOW_HEIGHT - 30}, 20, 0, rl.WHITE)
 
 		if g_mem.finished {
-			rl.DrawText("YOU DID IT!! YOU FOUND\nTHE THREE MAGICAL\nTUNA CANS!!!\n\nGOOD BYE", 40, 40, 20, rl.WHITE)
+			rl.DrawTextEx(font, "YOU DID IT!! YOU FOUND\nTHE THREE MAGICAL\nTUNA CANS!!!\n\nGOOD BYE", {40, 40}, 20, 0, rl.WHITE)
 		} else if g_mem.won {
-			rl.DrawText("YAY!!! TUNA", 40, 40, 40, rl.WHITE)
+			rl.DrawTextEx(font, "YAY!!! TUNA", {40, 40}, 40, 0, rl.WHITE)
 		}
 
 		rl.EndMode2D()
@@ -309,6 +321,7 @@ init_window :: proc() {
 	rl.InitWindow(1280, 720, "The Legend of Tuna")
 	rl.SetWindowPosition(200, 200)
 	rl.SetTargetFPS(500)
+	rl.InitAudioDevice()
 }
 
 Vec2 :: [2]f32
@@ -353,6 +366,9 @@ delete_wall :: proc(w: Wall) {
 }
 
 ATLAS_DATA :: #load("../atlas.png")
+HIT_SOUND :: #load("../hit.wav")
+LAND_SOUND :: #load("../land.wav")
+WIN_SOUND :: #load("../win.wav")
 
 delete_current_level :: proc() {
 	if g_mem.physics_world != {} {
@@ -434,9 +450,39 @@ init :: proc() {
 		tuna = {10, -2},
 		background_shader = rl.LoadShader(nil, "bg_shader.glsl"),
 		ground_shader = rl.LoadShader("ground_shader_vs.glsl", "ground_shader.glsl"),
+		hit_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(HIT_SOUND), i32(len(HIT_SOUND)))),
+		land_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(LAND_SOUND), i32(len(LAND_SOUND)))),
+		win_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(WIN_SOUND), i32(len(WIN_SOUND)))),
 	}
 
+	rl.SetSoundVolume(g_mem.hit_sound, 0.5)
+	rl.SetSoundVolume(g_mem.land_sound, 0.5)
+	rl.SetSoundVolume(g_mem.win_sound, 0.4)
+
 	rl.UnloadImage(atlas_image)
+
+	num_glyphs := len(atlas_glyphs)
+	font_rects := make([]Rect, num_glyphs)
+	glyphs := make([]rl.GlyphInfo, num_glyphs)
+
+	for ag, idx in atlas_glyphs {
+		font_rects[idx] = ag.rect
+		glyphs[idx] = {
+			value = ag.value,
+			offsetX = i32(ag.offset_x),
+			offsetY = i32(ag.offset_y),
+			advanceX = i32(ag.advance_x),
+		}
+	} 
+
+	g_mem.font = {
+		baseSize = ATLAS_FONT_SIZE,
+		glyphCount = i32(num_glyphs),
+		glyphPadding = 0,
+		texture = g_mem.atlas,
+		recs = raw_data(font_rects),
+		glyphs = raw_data(glyphs),
+	}
 
 	load_level(0)
 
@@ -445,10 +491,13 @@ init :: proc() {
 
 shutdown :: proc() {
 	delete(g_mem.walls)
+	mem.free(g_mem.font.recs)
+	mem.free(g_mem.font.glyphs)
 	free(g_mem)
 }
 
 shutdown_window :: proc() {
+	rl.CloseAudioDevice()
 	rl.CloseWindow()
 }
 
