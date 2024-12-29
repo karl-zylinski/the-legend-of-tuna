@@ -211,7 +211,7 @@ update :: proc() {
 		}
 	}
 
-	if round_cat_pos(g_mem.rc).y < -300 {
+	if round_cat_pos(g_mem.rc).y < 300 {
 		load_level(g_mem.current_level)
 	}
 }
@@ -252,6 +252,7 @@ draw :: proc() {
 	} else {
 		rl.BeginDrawing()
 		time_loc := rl.GetShaderLocation(g_mem.background_shader, "time")
+
 		camera_pos_loc := rl.GetShaderLocation(g_mem.background_shader, "cameraPos")
 		t := f32(rl.GetTime())
 		rl.SetShaderValue(g_mem.background_shader, time_loc, &t, .FLOAT)
@@ -360,6 +361,8 @@ delete_current_level :: proc() {
 	delete(g_mem.walls)
 }
 
+Vec3 :: [3]f32
+
 load_level :: proc(level_idx: int) -> bool {
 	delete_current_level()
 
@@ -369,6 +372,30 @@ load_level :: proc(level_idx: int) -> bool {
 	if current_level_name == "" {
 		return false
 	}
+
+	color1_loc := rl.GetShaderLocation(g_mem.ground_shader, "groundColor1")
+	color2_loc := rl.GetShaderLocation(g_mem.ground_shader, "groundColor2")
+	color3_loc := rl.GetShaderLocation(g_mem.ground_shader, "groundColor3")
+	
+	c1 := Vec3 {0.44, 0.69, 0.3}
+	c2 := Vec3 {0.2, 0.37, 0.15}
+	c3 := Vec3 {0.3, 0.15, 0.13}
+
+	if level_idx == 1 {
+		c1 = {0.5, 0.49, 0.2}
+		c2 = {0.77, 0.4, 0.15}
+		c3 = {0.15, 0.3, 0.3}
+	}
+
+	if level_idx == 2 {
+		c1 = {0.7, 0.3, 0.3}
+		c2 = {0.4, 0.4, 0.5}
+		c3 = {0.2, 0.1, 0.2}
+	}
+
+	rl.SetShaderValue(g_mem.ground_shader, color1_loc, &c1, .VEC3)
+	rl.SetShaderValue(g_mem.ground_shader, color2_loc, &c2, .VEC3)
+	rl.SetShaderValue(g_mem.ground_shader, color3_loc, &c3, .VEC3)
 
 	world_def := b2.DefaultWorldDef()
 	world_def.gravity = GRAVITY
