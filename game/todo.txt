@@ -14,9 +14,9 @@ x make boxes look nicer
 x add some slopes
 x multiple levels
 x different colors for different levels
-- menu choose level
+x sound / music
+x menu choose level
 - add nice bg gfx
-- sound / music
 - make boxes look even nicer
 
 

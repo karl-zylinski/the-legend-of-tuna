@@ -7,6 +7,8 @@ import "core:encoding/json"
 import "core:os"
 import "core:fmt"
 import "core:mem"
+import "core:strings"
+import "core:path/filepath"
 
 PIXEL_WINDOW_HEIGHT :: 180
 
@@ -40,6 +42,10 @@ Game_Memory :: struct {
 	hit_sound: rl.Sound,
 	land_sound: rl.Sound,
 	win_sound: rl.Sound,
+
+
+	in_menu: bool,
+	hovered_menu_item: int,
 }
 
 /*Tile :: struct {
@@ -119,8 +125,16 @@ update :: proc() {
 	dt = rl.GetFrameTime()
 	real_dt = dt
 
+	if rl.IsKeyPressed(.ENTER) && rl.IsKeyDown(.LEFT_ALT) {
+		rl.ToggleBorderlessWindowed()
+	}
+
 	if rl.IsKeyPressed(.ESCAPE) {
-		rl.CloseWindow()
+		delete_current_level()
+		g_mem.in_menu = true
+		g_mem.finished = false
+		g_mem.won = false
+		return
 	}
 
 	if g_mem.finished {
@@ -130,7 +144,7 @@ update :: proc() {
 	if g_mem.won {
 		dt = 0
 
-		if rl.IsMouseButtonPressed(.LEFT) && g_mem.won_at + 0.5 > rl.GetTime() {
+		if rl.IsMouseButtonPressed(.LEFT) && rl.GetTime() > g_mem.won_at + 0.5 {
 			g_mem.won = false
 
 			if g_mem.current_level == len(levels) - 1 {
@@ -140,6 +154,7 @@ update :: proc() {
 				load_level(g_mem.current_level + 1)	
 			}
 		}
+		return
 	}
 
 	if rl.IsKeyPressed(.F2) {
@@ -181,22 +196,48 @@ update :: proc() {
 		return
 	}
 
+	if rl.IsKeyPressed(.ONE) {
+		load_level(0)
+	}
 
-	when ODIN_DEBUG {
-		if rl.IsKeyPressed(.ONE) {
-			load_level(0)
-		}
+	if rl.IsKeyPressed(.TWO) {
+		load_level(1)
+	}
 
-		if rl.IsKeyPressed(.TWO) {
-			load_level(1)
-		}
-
-		if rl.IsKeyPressed(.THREE) {
-			load_level(2)
-		}
+	if rl.IsKeyPressed(.THREE) {
+		load_level(2)
 	}
 
 	custom_context = context
+
+	if g_mem.in_menu {
+
+		g_mem.hovered_menu_item = -1
+
+		rects := [?]Rect {
+			rect_from_pos_size(LEVEL_1_POS - {10, 0}, MENU_BUTTON_SIZE),
+			rect_from_pos_size(LEVEL_2_POS - {10, 0}, MENU_BUTTON_SIZE),
+			rect_from_pos_size(LEVEL_3_POS - {10, 0}, MENU_BUTTON_SIZE),
+			rect_from_pos_size(QUIT_POS - {10, 0}, MENU_BUTTON_SIZE),
+		}
+
+		for r, i in rects {
+			if rl.CheckCollisionPointRec(rl.GetScreenToWorld2D(rl.GetMousePosition(), ui_camera()), r) {
+				g_mem.hovered_menu_item = i
+
+				if rl.IsMouseButtonPressed(.LEFT) {
+					if i < len(rects) - 1 {
+						load_level(i)
+						g_mem.in_menu = false
+					} else {
+						rl.CloseWindow()
+					}
+				}
+			}
+		}
+
+		return
+	}
 
 	g_mem.time_accumulator += dt
 
@@ -260,6 +301,48 @@ draw :: proc() {
 	//debug_draw()
 	if g_mem.editing {
 		editor_draw(g_mem.es)
+	} else if g_mem.in_menu {
+		rl.BeginDrawing()
+		time_loc := rl.GetShaderLocation(g_mem.background_shader, "time")
+		t := f32(rl.GetTime())
+		rl.BeginShaderMode(g_mem.background_shader)
+		rl.SetShaderValue(g_mem.background_shader, time_loc, &t, .FLOAT)
+		rl.DrawRectangleRec({0, 0, f32(rl.GetScreenWidth()), f32(rl.GetScreenHeight())}, rl.WHITE)
+		rl.EndShaderMode()
+		rl.BeginMode2D(ui_camera())
+
+		rl.DrawTextEx(font, "THE LEGEND OF TUNA", {70, 30}, 30, 0, rl.WHITE)
+
+		rl.DrawTextureRec(atlas, atlas_textures[.Round_Cat].rect, {35, 30}, rl.WHITE)
+		rl.DrawTextureRec(atlas, atlas_textures[.Long_Cat].rect, {15, 10}, rl.WHITE)
+
+		rl.DrawTextureRec(atlas, atlas_textures[.Tuna].rect, {240, 10}, rl.WHITE)
+
+		rects := [?]Rect {
+			rect_from_pos_size(LEVEL_1_POS - {10, 0}, MENU_BUTTON_SIZE),
+			rect_from_pos_size(LEVEL_2_POS - {10, 0}, MENU_BUTTON_SIZE),
+			rect_from_pos_size(LEVEL_3_POS - {10, 0}, MENU_BUTTON_SIZE),
+			rect_from_pos_size(QUIT_POS - {10, 0}, MENU_BUTTON_SIZE),
+		}
+
+
+		rl.DrawTextEx(font, "by Karl Zylinski", {205, 55}, 15, 0, rl.WHITE)
+
+		if g_mem.hovered_menu_item >= 0 && g_mem.hovered_menu_item < len(rects) {
+			button_bg := rl.Color { 50, 70, 200, 120 }
+			rl.DrawRectangleRec(rects[g_mem.hovered_menu_item], button_bg)
+		}
+
+		rl.DrawTextEx(font, "Level 1", LEVEL_1_POS, 20, 0, rl.WHITE)
+
+		rl.DrawTextEx(font, "Level 2", LEVEL_2_POS, 20, 0, rl.WHITE)
+
+		rl.DrawTextEx(font, "Level 3", LEVEL_3_POS, 20, 0, rl.WHITE)
+
+		rl.DrawTextEx(font, "No More Tuna!", QUIT_POS, 20, 0, rl.WHITE)
+
+		rl.EndMode2D()
+		rl.EndDrawing()
 	} else {
 		rl.BeginDrawing()
 		time_loc := rl.GetShaderLocation(g_mem.background_shader, "time")
@@ -295,6 +378,13 @@ draw :: proc() {
 	}
 }
 
+LEVEL_1_POS :: Vec2 {70, 70+10}
+LEVEL_2_POS :: Vec2 {70, 90+10}
+LEVEL_3_POS :: Vec2 {70, 110+10}
+QUIT_POS :: Vec2 {70, 130+10}
+
+MENU_BUTTON_SIZE :: Vec2 {120, 20}
+
 get_world_mouse_pos :: proc(cam: rl.Camera2D) -> Vec2 {
 	return vec2_flip(rl.GetScreenToWorld2D(rl.GetMousePosition(), cam))
 }
@@ -317,11 +407,28 @@ vec2_flip :: proc(p: Vec2) -> Vec2 {
 }
 
 init_window :: proc() {
-	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
+	exe_path := os.args[0]
+    exe_dir := filepath.dir(string(exe_path))
+    os.set_current_directory(exe_dir)
+    fmt.println(exe_path)
+
+	flags: rl.ConfigFlags
+
+	when ODIN_DEBUG {
+		flags = {.WINDOW_RESIZABLE, .VSYNC_HINT}
+	} else {
+		flags = { .VSYNC_HINT }
+	}
+
+	rl.SetConfigFlags(flags)
 	rl.InitWindow(1280, 720, "The Legend of Tuna")
 	rl.SetWindowPosition(200, 200)
 	rl.SetTargetFPS(500)
 	rl.InitAudioDevice()
+	when !ODIN_DEBUG {
+		rl.ToggleBorderlessWindowed()
+	}
+	rl.SetExitKey(.KEY_NULL)
 }
 
 Vec2 :: [2]f32
@@ -374,7 +481,9 @@ delete_current_level :: proc() {
 	if g_mem.physics_world != {} {
 		b2.DestroyWorld(g_mem.physics_world)
 	}
+	g_mem.physics_world = {}
 	delete(g_mem.walls)
+	g_mem.walls = {}
 }
 
 Vec3 :: [3]f32
@@ -440,24 +549,38 @@ load_level :: proc(level_idx: int) -> bool {
 	return true
 }
 
+BACKGROUND_SHADER_DATA :: #load("../bg_shader.glsl")
+GROUND_SHADER_DATA :: #load("../ground_shader.glsl")
+GROUND_SHADER_VS_DATA :: #load("../ground_shader_vs.glsl")
+
+temp_cstring :: proc(s: string) -> cstring {
+	return strings.clone_to_cstring(s, context.temp_allocator)
+}
+
 
 init :: proc() {
 	g_mem = new(Game_Memory)
 	atlas_image := rl.LoadImageFromMemory(".png", raw_data(ATLAS_DATA), i32(len(ATLAS_DATA)))
 
+	bg_shader_str := strings.string_from_ptr(raw_data(BACKGROUND_SHADER_DATA), len(BACKGROUND_SHADER_DATA))
+	ground_shader_str := strings.string_from_ptr(raw_data(GROUND_SHADER_DATA), len(GROUND_SHADER_DATA))
+	ground_shader_vs_str := strings.string_from_ptr(raw_data(GROUND_SHADER_VS_DATA), len(GROUND_SHADER_VS_DATA))
+
 	g_mem^ = Game_Memory {
 		atlas = rl.LoadTextureFromImage(atlas_image),
 		tuna = {10, -2},
-		background_shader = rl.LoadShader(nil, "bg_shader.glsl"),
-		ground_shader = rl.LoadShader("ground_shader_vs.glsl", "ground_shader.glsl"),
+		background_shader = rl.LoadShaderFromMemory(nil, temp_cstring(bg_shader_str)),
+		ground_shader = rl.LoadShaderFromMemory(temp_cstring(ground_shader_vs_str), temp_cstring(ground_shader_str)),
 		hit_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(HIT_SOUND), i32(len(HIT_SOUND)))),
 		land_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(LAND_SOUND), i32(len(LAND_SOUND)))),
 		win_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(WIN_SOUND), i32(len(WIN_SOUND)))),
+		in_menu = true,
+		hovered_menu_item = -1,
 	}
 
 	rl.SetSoundVolume(g_mem.hit_sound, 0.5)
 	rl.SetSoundVolume(g_mem.land_sound, 0.5)
-	rl.SetSoundVolume(g_mem.win_sound, 0.4)
+	rl.SetSoundVolume(g_mem.win_sound, 0.3)
 
 	rl.UnloadImage(atlas_image)
 
@@ -483,8 +606,6 @@ init :: proc() {
 		recs = raw_data(font_rects),
 		glyphs = raw_data(glyphs),
 	}
-
-	load_level(0)
 
 	game_hot_reloaded(g_mem)
 }
