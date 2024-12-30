@@ -323,6 +323,8 @@ draw :: proc() {
 
 		rl.DrawTextEx(font, "No More Tuna!", QUIT_POS, 20, 0, rl.WHITE)
 
+		rl.DrawTextEx(font, "Controls: Mouse + Left Mouse Button", {70, PIXEL_WINDOW_HEIGHT-15} , 12, 0, rl.WHITE)
+
 		rl.EndMode2D()
 		rl.EndDrawing()
 	} else {

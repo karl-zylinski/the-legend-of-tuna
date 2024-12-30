@@ -63,7 +63,7 @@ PACKAGE_NAME :: "game"
 TEXTURES_DIR :: "textures"
 
 // The letters to extract from the font
-LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]-+"
+LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]-+|/"
 
 // The font to extract letters from
 FONT_FILENAME :: "font.ttf"
