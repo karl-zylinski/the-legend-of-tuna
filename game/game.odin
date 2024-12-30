@@ -1,14 +1,11 @@
 package game
 
 import b2 "box2d"
-import rl "vendor:raylib"
-import "base:runtime"
-import "core:encoding/json"
-import "core:os"
+import rl "raylib"
 import "core:fmt"
 import "core:mem"
 import "core:strings"
-import "core:path/filepath"
+import "core:log"
 
 PIXEL_WINDOW_HEIGHT :: 180
 
@@ -53,12 +50,16 @@ Game_Memory :: struct {
 	pos: [2]int,
 }*/
 
-current_level_name :: proc() -> string {
-	if g_mem.current_level < len(levels) {
-		return levels[g_mem.current_level]
+get_level_name :: proc(idx: int) -> string {
+	if idx >= 0 && idx < len(levels) {
+		return levels[idx]
 	}
 
 	return ""
+}
+
+current_level_name :: proc() -> string {
+	return get_level_name(g_mem.current_level)
 }
 
 levels := [?]string {
@@ -98,8 +99,6 @@ ui_camera :: proc() -> rl.Camera2D {
 physics_world :: proc() -> b2.WorldId {
 	return g_mem.physics_world
 }
-
-custom_context: runtime.Context
 
 Level_Wall :: struct {
 	rect: Rect,
@@ -170,22 +169,7 @@ update :: proc() {
 				level.walls[i].rot = w.rot
 			}
 
-			marshal_options := json.Marshal_Options {
-				pretty = true,
-				spec = .SJSON,
-			}
-			
-			json_data, json_marshal_err := json.marshal(level, marshal_options, context.temp_allocator)
-
-			if json_marshal_err == nil {
-				c := current_level_name()
-
-				if c != "" {
-					if !os.write_entire_file(current_level_name(), json_data) {
-						fmt.println("error writing level")
-					}
-				}
-			}
+			save_level_data(current_level_name(), level)
 		}
 
 		g_mem.editing = !g_mem.editing
@@ -207,8 +191,6 @@ update :: proc() {
 	if rl.IsKeyPressed(.THREE) {
 		load_level(2)
 	}
-
-	custom_context = context
 
 	if g_mem.in_menu {
 
@@ -407,17 +389,13 @@ vec2_flip :: proc(p: Vec2) -> Vec2 {
 }
 
 init_window :: proc() {
-	exe_path := os.args[0]
-    exe_dir := filepath.dir(string(exe_path))
-    os.set_current_directory(exe_dir)
-    fmt.println(exe_path)
-
+	platform_init()
 	flags: rl.ConfigFlags
 
 	when ODIN_DEBUG {
 		flags = {.WINDOW_RESIZABLE, .VSYNC_HINT}
 	} else {
-		flags = { .VSYNC_HINT }
+		flags = { .WINDOW_RESIZABLE, .VSYNC_HINT }
 	}
 
 	rl.SetConfigFlags(flags)
@@ -491,13 +469,13 @@ Vec3 :: [3]f32
 load_level :: proc(level_idx: int) -> bool {
 	delete_current_level()
 
-	g_mem.current_level = level_idx
-	current_level_name := current_level_name()
+	level, level_ok := load_level_data(get_level_name(level_idx))
 
-	if current_level_name == "" {
+	if !level_ok {
 		return false
 	}
 
+	g_mem.current_level = level_idx
 	color1_loc := rl.GetShaderLocation(g_mem.ground_shader, "groundColor1")
 	color2_loc := rl.GetShaderLocation(g_mem.ground_shader, "groundColor2")
 	color3_loc := rl.GetShaderLocation(g_mem.ground_shader, "groundColor3")
@@ -529,21 +507,12 @@ load_level :: proc(level_idx: int) -> bool {
 
 	g_mem.walls = {}
 	g_mem.long_cat_spawns = 0
-
-	if data, data_ok := os.read_entire_file(current_level_name, context.temp_allocator); data_ok {
-		level: Level
-		json_unmarshal_err := json.unmarshal(data, &level, .SJSON, context.temp_allocator)
-
-		if json_unmarshal_err == nil {
-			for w in level.walls {
-				make_wall(w.rect, w.rot)
-			}
-
-			g_mem.tuna = level.tuna_pos
-			g_mem.starting_pos = level.starting_pos
-		}
+	for w in level.walls {
+		make_wall(w.rect, w.rot)
 	}
 
+	g_mem.tuna = level.tuna_pos
+	g_mem.starting_pos = level.starting_pos
 	g_mem.rc = round_cat_make(g_mem.starting_pos)
 	g_mem.lc.state = .Not_Spawned
 	return true
@@ -565,11 +534,12 @@ init :: proc() {
 	bg_shader_str := strings.string_from_ptr(raw_data(BACKGROUND_SHADER_DATA), len(BACKGROUND_SHADER_DATA))
 	ground_shader_str := strings.string_from_ptr(raw_data(GROUND_SHADER_DATA), len(GROUND_SHADER_DATA))
 	ground_shader_vs_str := strings.string_from_ptr(raw_data(GROUND_SHADER_VS_DATA), len(GROUND_SHADER_VS_DATA))
-
+	bg_shader := rl.LoadShaderFromMemory(nil, temp_cstring(bg_shader_str))
+	log.info("end of bg shader")
 	g_mem^ = Game_Memory {
 		atlas = rl.LoadTextureFromImage(atlas_image),
 		tuna = {10, -2},
-		background_shader = rl.LoadShaderFromMemory(nil, temp_cstring(bg_shader_str)),
+		background_shader = bg_shader,
 		ground_shader = rl.LoadShaderFromMemory(temp_cstring(ground_shader_vs_str), temp_cstring(ground_shader_str)),
 		hit_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(HIT_SOUND), i32(len(HIT_SOUND)))),
 		land_sound = rl.LoadSoundFromWave(rl.LoadWaveFromMemory(".wav", raw_data(LAND_SOUND), i32(len(LAND_SOUND)))),
@@ -578,6 +548,7 @@ init :: proc() {
 		hovered_menu_item = -1,
 	}
 
+	
 	rl.SetSoundVolume(g_mem.hit_sound, 0.5)
 	rl.SetSoundVolume(g_mem.land_sound, 0.5)
 	rl.SetSoundVolume(g_mem.win_sound, 0.3)
@@ -588,7 +559,10 @@ init :: proc() {
 	font_rects := make([]Rect, num_glyphs)
 	glyphs := make([]rl.GlyphInfo, num_glyphs)
 
+	log.info(font_rects)
+
 	for ag, idx in atlas_glyphs {
+		
 		font_rects[idx] = ag.rect
 		glyphs[idx] = {
 			value = ag.value,

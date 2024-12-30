@@ -1,8 +1,10 @@
-#version 330
+#version 100
 
-in vec3 vertexPosition;
+precision highp float;
+
+attribute vec3 vertexPosition;
 uniform mat4 mvp;
-out vec3 localPosition;
+varying vec3 localPosition;
 
 void main()
 {

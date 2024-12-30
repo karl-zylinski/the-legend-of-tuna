@@ -1,6 +1,7 @@
-#version 330
-uniform sampler2D texture0;
-out vec4 finalColor;
+#version 100
+
+precision highp float;
+
 uniform float time;
 uniform vec2 cameraPos;
 
@@ -50,15 +51,15 @@ float gln_simplex(vec2 v) {
 
 void main()
 {
-	vec2 sp = (floor(gl_FragCoord.xy/5)*5)/600;
+	vec2 sp = (floor(gl_FragCoord.xy/5.0)*5.0)/600.0;
 	float n = gln_simplex(sp + vec2(time*1.2*0.01, time*0.01) + cameraPos*0.005);
 
-	vec4 c1 = vec4(10/255.0, 130.0/255.0, 163.0/255.0, 1);
+	vec4 c1 = vec4(10.0/255.0, 130.0/255.0, 163.0/255.0, 1);
 	vec4 c2 = vec4(0.0/255.0, 120.0/255.0, 153.0/255.0, 1);
 
 
-	float s = (cos(time/10) + 1)/6+0.3;
+	float s = (cos(time/10.0) + 1.0)/6.0+0.3;
 
-	finalColor = vec4(mix(c1, c2, step(n, s)).rgb,1);
+	gl_FragColor = vec4(mix(c1, c2, step(n, s)).rgb,1);
 }
 // #name: Simplex

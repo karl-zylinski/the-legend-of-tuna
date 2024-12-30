@@ -1,7 +1,8 @@
-#version 330
-out vec4 finalColor;
-in vec3 localPosition;
-in vec2 fragTexCoord;
+#version 100
+
+precision highp float;
+
+varying vec3 localPosition;
 
 uniform vec3 groundColor1;
 uniform vec3 groundColor2;
@@ -101,13 +102,14 @@ float gln_simplex(vec2 v) {
 
 void main()
 {
-    vec2 i = (floor((localPosition.xy*100)/10)*10);
-	float n = gln_perlin(i/500);
-    float nn = gln_simplex(i/400);
+    vec2 i = (floor((localPosition.xy*100.0)/10.0)*10.0);
+	float n = gln_perlin(i/500.0);
+    float nn = gln_simplex(i/400.0);
     n -= nn;
 	vec3 c1 = groundColor1;//vec3(0.44, 0.69, 0.3);
 	vec3 c2 = groundColor2;//vec3(0.2f, 0.37f, 0.15f);
     vec3 c3 = groundColor3;//vec3(0.3f, 0.15f, 0.13f);
-    finalColor = vec4(mix(c2, c3, step(n, 0.5)).rgb, 1);
-	finalColor = vec4(mix(finalColor.rgb, c1, step(n, 0.2)).rgb,1);
+    vec4 finalColor = vec4(mix(c2, c3, step(n, 0.5)).rgb, 1.0);
+	finalColor = vec4(mix(finalColor.rgb, c1, step(n, 0.2)).rgb,1.0);
+    gl_FragColor = finalColor;
 }

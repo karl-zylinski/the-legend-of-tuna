@@ -1,6 +1,8 @@
+#+build !freestanding
+
 package game
 
-import rl "vendor:raylib"
+import rl "raylib"
 
 @(export)
 game_init :: proc() {

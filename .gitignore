@@ -16,4 +16,5 @@ log.txt
 linux
 atlas.png
 pdbs/
-!box2d/**
+!game/box2d/**
+!game/raylib/**

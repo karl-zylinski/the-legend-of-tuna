@@ -1,6 +1,6 @@
 package game
 
-import rl "vendor:raylib"
+import rl "raylib"
 import b2 "box2d"
 import "core:math"
 import "core:fmt"
