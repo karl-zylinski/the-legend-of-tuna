@@ -388,6 +388,8 @@ vec2_flip :: proc(p: Vec2) -> Vec2 {
 	}
 }
 
+IS_WASM :: ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32
+
 init_window :: proc() {
 	platform_init()
 	flags: rl.ConfigFlags
@@ -395,7 +397,11 @@ init_window :: proc() {
 	when ODIN_DEBUG {
 		flags = {.WINDOW_RESIZABLE, .VSYNC_HINT}
 	} else {
-		flags = { .WINDOW_RESIZABLE, .VSYNC_HINT }
+		flags = { .VSYNC_HINT }
+	}
+
+	when IS_WASM {
+		flags += { .WINDOW_RESIZABLE }
 	}
 
 	rl.SetConfigFlags(flags)
@@ -403,7 +409,7 @@ init_window :: proc() {
 	rl.SetWindowPosition(200, 200)
 	rl.SetTargetFPS(500)
 	rl.InitAudioDevice()
-	when !ODIN_DEBUG {
+	when !ODIN_DEBUG && !IS_WASM {
 		rl.ToggleBorderlessWindowed()
 	}
 	rl.SetExitKey(.KEY_NULL)
