@@ -2,7 +2,7 @@
 
 Playable in browser here: https://zylinski.itch.io/the-legend-of-tuna
 
-Long cat and round cat needs tuna. Click to spawn long cat and smack round cat to the treat! It's like golf, but fishy.
+Long Cat and Round Cat needs tuna. Use Long Cat to smack Round Cat to the treat! It's like golf, but fishy.
 
 Uses Odin Programming Language, Raylib and Box2D.
 
