@@ -7,21 +7,19 @@ LEVEL_0 :: #load("../level.sjson")
 LEVEL_1 :: #load("../level2.sjson")
 LEVEL_2 :: #load("../level3.sjson")
 
-load_level_data :: proc(level_name: string) -> (Level, bool) {
-	data: []u8
+level_data := [?][]u8 {
+	LEVEL_0,
+	LEVEL_1,
+	LEVEL_2,
+}
 
-	if level_name == "level.sjson" {
-		data = LEVEL_0
-	} else if level_name == "level2.sjson" {
-		data = LEVEL_1
-	} else if level_name == "level3.sjson" {
-		data = LEVEL_2
-	} else {
+load_level_data :: proc(level_idx: int) -> (Level, bool) {
+	if level_idx < 0 || level_idx >= len(level_data) {
 		return {}, false
 	}
 
+	data := level_data[level_idx]
 	level: Level
-
 	json_unmarshal_err := json.unmarshal(data, &level, .SJSON, context.temp_allocator)
 
 	if json_unmarshal_err != nil {
@@ -31,6 +29,6 @@ load_level_data :: proc(level_name: string) -> (Level, bool) {
 	return level, true
 }
 
-save_level_data :: proc(level_name: string, level: Level) {
+save_level_data :: proc(level_idx: int, level: Level) {
 	
 }

@@ -5,7 +5,9 @@ import "core:os"
 import "core:encoding/json"
 import "core:log"
 
-load_level_data :: proc(level_name: string) -> (Level, bool) {
+load_level_data :: proc(level_idx: int) -> (Level, bool) {
+	level_name := levels[level_idx]
+
 	data, data_ok := os.read_entire_file(level_name, context.temp_allocator)
 
 	if !data_ok {
@@ -23,7 +25,9 @@ load_level_data :: proc(level_name: string) -> (Level, bool) {
 	return level, true
 }
 
-save_level_data :: proc(level_name: string, level: Level) {
+save_level_data :: proc(level_idx: int, level: Level) {
+	level_name := levels[level_idx]
+	
 	marshal_options := json.Marshal_Options {
 		pretty = true,
 		spec = .SJSON,

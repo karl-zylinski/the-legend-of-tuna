@@ -156,7 +156,7 @@ update :: proc() {
 		return
 	}
 
-	if rl.IsKeyPressed(.F2) {
+	if !g_mem.in_menu && rl.IsKeyPressed(.F2) {
 		if g_mem.editing {
 			level := Level {
 				walls = make([]Level_Wall, len(g_mem.walls), context.temp_allocator),
@@ -169,7 +169,7 @@ update :: proc() {
 				level.walls[i].rot = w.rot
 			}
 
-			save_level_data(current_level_name(), level)
+			save_level_data(g_mem.current_level, level)
 		}
 
 		g_mem.editing = !g_mem.editing
@@ -477,7 +477,7 @@ Vec3 :: [3]f32
 load_level :: proc(level_idx: int) -> bool {
 	delete_current_level()
 
-	level, level_ok := load_level_data(get_level_name(level_idx))
+	level, level_ok := load_level_data(level_idx)
 
 	if !level_ok {
 		return false
