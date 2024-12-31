@@ -12,9 +12,9 @@ load_level_data :: proc(level_name: string) -> (Level, bool) {
 
 	if level_name == "level.sjson" {
 		data = LEVEL_0
-	} else if level_name == "level1.sjson" {
-		data = LEVEL_1
 	} else if level_name == "level2.sjson" {
+		data = LEVEL_1
+	} else if level_name == "level3.sjson" {
 		data = LEVEL_2
 	} else {
 		return {}, false

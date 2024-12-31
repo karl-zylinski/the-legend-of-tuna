@@ -18,4 +18,4 @@ atlas.png
 pdbs/
 !game/box2d/**
 !game/raylib/**
-build_web/
+output_web/
