@@ -6,6 +6,10 @@ import "core:encoding/json"
 import "core:log"
 
 load_level_data :: proc(level_idx: int) -> (Level, bool) {
+	if level_idx < 0 || level_idx >= len(levels) {
+		return {}, false
+	}
+
 	level_name := levels[level_idx]
 
 	data, data_ok := os.read_entire_file(level_name, context.temp_allocator)
@@ -26,8 +30,12 @@ load_level_data :: proc(level_idx: int) -> (Level, bool) {
 }
 
 save_level_data :: proc(level_idx: int, level: Level) {
-	level_name := levels[level_idx]
+	if level_idx < 0 || level_idx >= len(levels) {
+		return
+	}
 	
+	level_name := levels[level_idx]
+
 	marshal_options := json.Marshal_Options {
 		pretty = true,
 		spec = .SJSON,
@@ -36,12 +44,8 @@ save_level_data :: proc(level_idx: int, level: Level) {
 	json_data, json_marshal_err := json.marshal(level, marshal_options, context.temp_allocator)
 
 	if json_marshal_err == nil {
-		c := current_level_name()
-
-		if c != "" {
-			if !os.write_entire_file(level_name, json_data) {
-				log.error("error writing level")
-			}
+		if !os.write_entire_file(level_name, json_data) {
+			log.error("error writing level")
 		}
 	}
 }
