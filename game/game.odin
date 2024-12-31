@@ -5,7 +5,6 @@ import rl "raylib"
 import "core:fmt"
 import "core:mem"
 import "core:strings"
-import "core:log"
 
 PIXEL_WINDOW_HEIGHT :: 180
 
@@ -43,23 +42,6 @@ Game_Memory :: struct {
 
 	in_menu: bool,
 	hovered_menu_item: int,
-}
-
-/*Tile :: struct {
-	tile: Tile_Id,
-	pos: [2]int,
-}*/
-
-get_level_name :: proc(idx: int) -> string {
-	if idx >= 0 && idx < len(levels) {
-		return levels[idx]
-	}
-
-	return ""
-}
-
-current_level_name :: proc() -> string {
-	return get_level_name(g_mem.current_level)
 }
 
 levels := [?]string {
@@ -543,7 +525,7 @@ init :: proc() {
 	ground_shader_str := strings.string_from_ptr(raw_data(GROUND_SHADER_DATA), len(GROUND_SHADER_DATA))
 	ground_shader_vs_str := strings.string_from_ptr(raw_data(GROUND_SHADER_VS_DATA), len(GROUND_SHADER_VS_DATA))
 	bg_shader := rl.LoadShaderFromMemory(nil, temp_cstring(bg_shader_str))
-	log.info("end of bg shader")
+
 	g_mem^ = Game_Memory {
 		atlas = rl.LoadTextureFromImage(atlas_image),
 		tuna = {10, -2},
@@ -566,8 +548,6 @@ init :: proc() {
 	num_glyphs := len(atlas_glyphs)
 	font_rects := make([]Rect, num_glyphs)
 	glyphs := make([]rl.GlyphInfo, num_glyphs)
-
-	log.info(font_rects)
 
 	for ag, idx in atlas_glyphs {
 		
