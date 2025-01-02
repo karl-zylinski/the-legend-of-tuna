@@ -1,6 +1,6 @@
 package game
 
-import rl "raylib"
+import rl "vendor:raylib"
 import b2 "box2d"
 import "core:fmt"
 import "core:math/linalg"

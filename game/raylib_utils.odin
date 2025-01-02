@@ -1,6 +1,6 @@
 package game
 
-import rl "raylib"
+import rl "vendor:raylib"
 
 RAD2DEG :: rl.RAD2DEG
 

@@ -7,7 +7,7 @@ import "core:log"
 import "core:fmt"
 import "core:strings"
 import "core:c"
-import rl "raylib"
+import rl "vendor:raylib"
 
 custom_context: runtime.Context
 

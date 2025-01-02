@@ -1,7 +1,7 @@
 package game
 
 import b2 "box2d"
-import rl "raylib"
+import rl "vendor:raylib"
 import "core:fmt"
 import "core:mem"
 import "core:strings"

@@ -2,7 +2,7 @@
 
 package game
 
-import rl "raylib"
+import rl "vendor:raylib"
 
 @(export)
 game_init :: proc() {
