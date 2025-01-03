@@ -1,5 +1,6 @@
 *.exe
 *.sublime-workspace
+build/
 *.pdb
 *.raddbgi
 *.raddbg
