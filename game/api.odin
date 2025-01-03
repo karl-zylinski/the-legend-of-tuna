@@ -1,5 +1,3 @@
-#+build !freestanding
-
 package game
 
 import rl "vendor:raylib"
@@ -55,4 +53,9 @@ game_force_reload :: proc() -> bool {
 @(export)
 game_force_restart :: proc() -> bool {
 	return rl.IsKeyPressed(.F6)
+}
+
+@(export)
+parent_window_size_changed :: proc "c" (w, h: int) {
+	rl.SetWindowSize(i32(w), i32(h))
 }

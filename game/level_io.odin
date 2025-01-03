@@ -1,7 +1,6 @@
-#+build !freestanding
 package game
 
-import "core:os"
+import "os"
 import "core:encoding/json"
 import "core:log"
 

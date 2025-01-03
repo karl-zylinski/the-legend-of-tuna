@@ -8,6 +8,7 @@ import "core:c/libc"
 import "core:os"
 import "core:log"
 import "core:mem"
+import "core:path/filepath"
 
 when ODIN_OS == .Windows {
 	DLL_EXT :: ".dll"
@@ -93,6 +94,10 @@ unload_game_api :: proc(api: ^Game_API) {
 }
 
 main :: proc() {
+	exe_path := os.args[0]
+    exe_dir := filepath.dir(string(exe_path), context.temp_allocator)
+    os.set_current_directory(exe_dir)
+
 	context.logger = log.create_console_logger()
 
 	default_allocator := context.allocator

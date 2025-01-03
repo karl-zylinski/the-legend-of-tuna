@@ -45,9 +45,9 @@ Game_Memory :: struct {
 }
 
 levels := [?]string {
-	"level.sjson",
-	"level2.sjson",
-	"level3.sjson",
+	"assets/level.sjson",
+	"assets/level2.sjson",
+	"assets/level3.sjson",
 }
 
 atlas: rl.Texture2D
@@ -375,7 +375,6 @@ vec2_flip :: proc(p: Vec2) -> Vec2 {
 IS_WASM :: ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32
 
 init_window :: proc() {
-	platform_init()
 	flags: rl.ConfigFlags
 
 	when ODIN_DEBUG {

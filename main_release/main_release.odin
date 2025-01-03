@@ -4,12 +4,17 @@ package main_release
 
 import "core:log"
 import "core:os"
+import "core:path/filepath"
 
 import game "../game"
 
 USE_TRACKING_ALLOCATOR :: #config(USE_TRACKING_ALLOCATOR, false)
 
 main :: proc() {
+	exe_path := os.args[0]
+    exe_dir := filepath.dir(string(exe_path), context.temp_allocator)
+    os.set_current_directory(exe_dir)
+
 	when USE_TRACKING_ALLOCATOR {
 		default_allocator := context.allocator
 		tracking_allocator: Tracking_Allocator
