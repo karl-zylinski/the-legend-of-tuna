@@ -13,3 +13,7 @@ Made in 48 hours. Every single second of the development can be watched here: ht
 Uses the Odin + Raylib + Hot Reload template: https://github.com/karl-zylinski/odin-raylib-hot-reload-game-template
 
 This repository helped me figure out how to do the web build: https://github.com/Aronicu/Raylib-WASM
+
+## Box2D notes
+
+This project uses a copy of `vendor:box2d`, you'll find it in `source` folder. I copied it because I needed to remove the `box2d_wasm.odin` file inside in order to make it compatible with emscripten.
