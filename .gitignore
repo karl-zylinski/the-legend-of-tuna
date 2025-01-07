@@ -8,3 +8,4 @@ box2d.dll
 linux/**
 *.rdi
 log.txt
+!source/box2d/**
