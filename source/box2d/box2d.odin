@@ -3,13 +3,15 @@ package vendor_box2d
 import "base:intrinsics"
 import "core:c"
 
+BOX2D_SHARED :: #config(BOX2D_SHARED, false)
+
 when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
 	@(private) VECTOR_EXT :: "_simd" when #config(VENDOR_BOX2D_ENABLE_SIMD128, intrinsics.has_target_feature("simd128")) else ""
 } else {
 	@(private) VECTOR_EXT :: "avx2" when #config(VENDOR_BOX2D_ENABLE_AVX2, intrinsics.has_target_feature("avx2")) else "sse2"
 }
 
-when ODIN_OS == .Windows && ODIN_DEBUG {
+when ODIN_OS == .Windows && BOX2D_SHARED {
 	@(private) LIB_PATH :: "lib/box2d.lib"
 } else when ODIN_OS == .Windows {
 	@(private) LIB_PATH :: "lib/box2d_windows_amd64_" + VECTOR_EXT + ".lib"

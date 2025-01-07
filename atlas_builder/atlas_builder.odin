@@ -37,11 +37,11 @@ import stbtt "vendor:stb/truetype"
 ATLAS_SIZE :: 512
 
 // Path to output final atlas PNG to
-ATLAS_PNG_OUTPUT_PATH :: "atlas.png"
+ATLAS_PNG_OUTPUT_PATH :: "assets/atlas.png"
 
 // Path to output atlas Odin metadata file to. Compile this as part of your game to get metadata
 // about where in atlas your textures etc are.
-ATLAS_ODIN_OUTPUT_PATH :: "game/atlas.odin"
+ATLAS_ODIN_OUTPUT_PATH :: "source/atlas.odin"
 
 // Set to false to not crop atlas after generation.
 ATLAS_CROP :: true
@@ -66,7 +66,7 @@ TEXTURES_DIR :: "textures"
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]-+|/"
 
 // The font to extract letters from
-FONT_FILENAME :: "font.ttf"
+FONT_FILENAME :: "fonts/font.ttf"
 
 // The font size of letters extracted from font
 FONT_SIZE :: 64
@@ -936,6 +936,10 @@ main :: proc() {
 
 	img_write :: proc "c" (ctx: rawptr, data: rawptr, size: c.int) {
 		context = default_context
+		dir := slashpath.dir(ATLAS_PNG_OUTPUT_PATH)
+		if dir != "" {
+			os.make_directory(dir)
+		}
 		os.write_entire_file(ATLAS_PNG_OUTPUT_PATH, slice.bytes_from_ptr(data, int(size)))
 	}
 

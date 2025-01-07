@@ -6,7 +6,7 @@ import "core:log"
 import "core:os"
 import "core:path/filepath"
 
-import game "../game"
+import game ".."
 
 USE_TRACKING_ALLOCATOR :: #config(USE_TRACKING_ALLOCATOR, false)
 

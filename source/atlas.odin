@@ -21,7 +21,7 @@ or if you want to use integers (or any other numeric type):
 Just make sure you have something along those lines the same package as this file.
 */
 
-TEXTURE_ATLAS_FILENAME :: "atlas.png"
+TEXTURE_ATLAS_FILENAME :: "assets/atlas.png"
 ATLAS_FONT_SIZE :: 64
 LETTERS_IN_FONT :: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890?!&.,_:[]-+|/"
 

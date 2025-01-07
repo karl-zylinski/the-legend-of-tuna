@@ -439,10 +439,10 @@ delete_wall :: proc(w: Wall) {
 	b2.DestroyBody(w.body)
 }
 
-ATLAS_DATA :: #load("../atlas.png")
-HIT_SOUND :: #load("../hit.wav")
-LAND_SOUND :: #load("../land.wav")
-WIN_SOUND :: #load("../win.wav")
+ATLAS_DATA :: #load("../assets/atlas.png")
+HIT_SOUND :: #load("../sounds/hit.wav")
+LAND_SOUND :: #load("../sounds/land.wav")
+WIN_SOUND :: #load("../sounds/win.wav")
 
 delete_current_level :: proc() {
 	if g_mem.physics_world != {} {
