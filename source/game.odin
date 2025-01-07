@@ -507,9 +507,11 @@ load_level :: proc(level_idx: int) -> bool {
 	return true
 }
 
-BACKGROUND_SHADER_DATA :: #load("../bg_shader.glsl")
-GROUND_SHADER_DATA :: #load("../ground_shader.glsl")
-GROUND_SHADER_VS_DATA :: #load("../ground_shader_vs.glsl")
+SHADERS_DIR :: "../shaders"
+
+BACKGROUND_SHADER_DATA :: #load(SHADERS_DIR + "/bg_shader.glsl")
+GROUND_SHADER_DATA :: #load(SHADERS_DIR + "/ground_shader.glsl")
+GROUND_SHADER_VS_DATA :: #load(SHADERS_DIR + "/ground_shader_vs.glsl")
 
 temp_cstring :: proc(s: string) -> cstring {
 	return strings.clone_to_cstring(s, context.temp_allocator)
