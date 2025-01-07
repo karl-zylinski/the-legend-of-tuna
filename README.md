@@ -18,7 +18,6 @@ This repository helped me figure out how to do the web build: https://github.com
 
 This project uses a copy of `vendor:box2d`, you'll find it in `source` folder.
 
-Some notes:
 - I've added a DLL version for windows, in order to enable hot reload (box2d stores some global state internally that is destroyed each reload if it is statically linked into `game.dll`).
 - I've removed `source/box2d/box2d_wasm.odin` in order to remove some emscripten compile issues. Odin's box2D works without emscripten. But if you need emscripten, because of for example raylib, then you'll this conflict.
 - The in `build_web.bat`: Note that I need to link `source/box2d/box2d_wasm.o` when calling `emcc`.
