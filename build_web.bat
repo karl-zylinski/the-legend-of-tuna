@@ -14,6 +14,8 @@
 
 @echo off
 
+odin run atlas_builder
+
 :: Set this to point to where you installed emscripten.
 set EMSCRIPTEN_SDK_DIR=c:\emsdk
 set OUT_DIR=build\web

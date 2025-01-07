@@ -3,6 +3,7 @@ project.sublime-workspace
 game_hot_reload.exe
 game_hot_reload.bin
 atlas_builder.exe
+atlas_builder.bin
 raylib.dll
 box2d.dll
 linux/**

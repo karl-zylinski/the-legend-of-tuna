@@ -2,6 +2,7 @@
 
 # This script creates an optimized release build.
 
+odin run atlas_builder
 OUT_DIR="build/release"
 mkdir -p "$OUT_DIR"
 odin build source/main_release -out:$OUT_DIR/game_release.bin -strict-style -vet -no-bounds-check -o:speed
