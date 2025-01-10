@@ -44,7 +44,7 @@ export EMSDK_QUIET=1
 odin build source/main_web -target:freestanding_wasm32 -build-mode:obj -define:RAYLIB_WASM_LIB=env.o -vet -strict-style -o:speed -out:$OUT_DIR/game
 
 ODIN_PATH=$(odin root)
-files="source/main_web/main_web.c $OUT_DIR/game.wasm.o ${ODIN_PATH}/vendor/raylib/wasm/libraylib.a source\box2d\lib\box2d_wasm.o"
+files="source/main_web/main_web.c $OUT_DIR/game.wasm.o ${ODIN_PATH}/vendor/raylib/wasm/libraylib.a source/box2d/lib/box2d_wasm.o"
 flags="-sUSE_GLFW=3 -sASYNCIFY -sASSERTIONS -DPLATFORM_WEB --shell-file source/main_web/index_template.html --preload-file assets"
 
 # shellcheck disable=SC2086
