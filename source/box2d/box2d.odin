@@ -13,6 +13,8 @@ when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
 
 when ODIN_OS == .Windows && BOX2D_SHARED {
 	@(private) LIB_PATH :: "lib/box2d.lib"
+} else when ODIN_OS == .Darwin && BOX2D_SHARED {
+	@(private) LIB_PATH :: "lib/libbox2d.3.dylib"
 } else when ODIN_OS == .Windows {
 	@(private) LIB_PATH :: "lib/box2d_windows_amd64_" + VECTOR_EXT + ".lib"
 } else when ODIN_OS == .Darwin && ODIN_ARCH == .arm64 {
