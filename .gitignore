@@ -10,3 +10,4 @@ linux/**
 *.rdi
 log.txt
 !source/box2d/**
+game_hot_reload.bin.*
