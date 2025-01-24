@@ -20,11 +20,11 @@ foreign {
 	realloc :: proc(ptr: rawptr, size: c.size_t) -> rawptr ---
 }
 
-aligned_raylib_allocator :: proc "contextless" () -> mem.Allocator {
-	return mem.Allocator{aligned_raylib_allocator_proc, nil}
+emscripten_allocator :: proc "contextless" () -> mem.Allocator {
+	return mem.Allocator{emscripten_allocator_proc, nil}
 }
 
-aligned_raylib_allocator_proc :: proc(
+emscripten_allocator_proc :: proc(
 	allocator_data: rawptr,
 	mode: mem.Allocator_Mode,
 	size, alignment: int,

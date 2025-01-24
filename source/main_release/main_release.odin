@@ -1,4 +1,6 @@
-// For making a release exe that does not use hot reload.
+/*
+For making a release exe that does not use hot reload.
+*/
 
 package main_release
 
@@ -10,11 +12,13 @@ import game ".."
 
 USE_TRACKING_ALLOCATOR :: #config(USE_TRACKING_ALLOCATOR, false)
 
-main :: proc() {
-	exe_path := os.args[0]
-    exe_dir := filepath.dir(string(exe_path), context.temp_allocator)
-    os.set_current_directory(exe_dir)
 
+main :: proc() {
+	// Set working dir to dir of executable.
+	exe_path := os.args[0]
+	exe_dir := filepath.dir(string(exe_path), context.temp_allocator)
+	os.set_current_directory(exe_dir)
+	
 	when USE_TRACKING_ALLOCATOR {
 		default_allocator := context.allocator
 		tracking_allocator: Tracking_Allocator
@@ -40,9 +44,8 @@ main :: proc() {
 	game.game_init_window()
 	game.game_init()
 
-	window_open := true
-	for window_open {
-		window_open = game.game_update()
+	for !game.game_should_close() {
+		game.game_update()
 
 		when USE_TRACKING_ALLOCATOR {
 			for b in tracking_allocator.bad_free_array {

@@ -13,10 +13,14 @@ game_init_window :: proc() {
 }
 
 @(export)
-game_update :: proc() -> bool {
+game_update :: proc() {
 	update()
 	draw()
-	return !rl.WindowShouldClose()
+}
+
+@(export)
+game_should_close :: proc() -> bool {
+	return rl.WindowShouldClose()
 }
 
 @(export)

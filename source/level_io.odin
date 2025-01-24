@@ -1,6 +1,5 @@
 package game
 
-import "os"
 import "core:encoding/json"
 import "core:log"
 
@@ -11,7 +10,7 @@ load_level_data :: proc(level_idx: int) -> (Level, bool) {
 
 	level_name := levels[level_idx]
 
-	data, data_ok := os.read_entire_file(level_name, context.temp_allocator)
+	data, data_ok := read_entire_file(level_name, context.temp_allocator)
 
 	if !data_ok {
 		return {}, false
@@ -43,7 +42,7 @@ save_level_data :: proc(level_idx: int, level: Level) {
 	json_data, json_marshal_err := json.marshal(level, marshal_options, context.temp_allocator)
 
 	if json_marshal_err == nil {
-		if !os.write_entire_file(level_name, json_data) {
+		if !write_entire_file(level_name, json_data) {
 			log.error("error writing level")
 		}
 	}

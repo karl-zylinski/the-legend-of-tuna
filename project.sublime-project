@@ -16,15 +16,12 @@
 		{
 			"file_regex": "^(.+)\\(([0-9]+):([0-9]+)\\) (.+)$",
 			"name": "Game template",
+			"shell_cmd": "build_hot_reload.bat && start game_hot_reload.exe",
 
 			"variants": [
 				{
-					"name": "run",
-					"shell_cmd": "build_hot_reload.bat && start game_hot_reload.exe",
-				},
-				{
 					"name": "web",
-					"cmd": "build_web.bat",
+					"shell_cmd": "build_web.bat",
 				},
 			],
 			"working_dir": "$project_path",

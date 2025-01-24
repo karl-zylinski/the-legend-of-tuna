@@ -1,13 +1,10 @@
-/*
-This implements some often-used procs from `core:os` but using the libc stuff
-that emscripten links in.
-*/
+// Implementations of `read_entire_file` and `write_entire_file` using the libc
+// stuff emscripten exposes. You can read the files that get bundled by
+// `--preload-file assets` in `build_web` script.
 
-#+build freestanding
 #+build wasm32, wasm64p32
-#+private
 
-package web_compatible_os
+package game
 
 import "base:runtime"
 import "core:log"
@@ -34,7 +31,7 @@ Whence :: enum c.int {
 	END,
 }
 
-// Similar to rl.LoadFileData
+// Similar to raylib's LoadFileData
 _read_entire_file :: proc(name: string, allocator := context.allocator, loc := #caller_location) -> (data: []byte, success: bool) {
 	if name == "" {
 		log.error("No file name provided")
@@ -77,7 +74,7 @@ _read_entire_file :: proc(name: string, allocator := context.allocator, loc := #
 	return data, true
 }
 
-// Similar to rl.SaveFileData.
+// Similar to raylib's SaveFileData.
 //
 // Note: This can save during the current session, but I don't think you can
 // save any data between sessions. So when you close the tab your saved files

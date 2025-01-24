@@ -1,14 +1,12 @@
 #!/bin/bash -eu
 
-# This script creates a web build. It builds the game with wasm32 architecture,
-# but without any OS support (freestanding). It then uses emscripten to compile
-# a small C program that is the entry point of the web build. That C program
-# calls the Odin code.
-# 
-# Being built in freestanding mode, the Odin code has no allocator set up by
-# default. I work around this by setting up an allocator that uses the C
-# standard library that emscripten exposes. See the stuff in `source/main_web`
-# for more info.
+# This script creates a web build. It builds the game with wasm32 architecture.
+# It then uses emscripten to compile a small C program that is the entry point
+# of the web build. That C program calls the Odin code.
+#
+# When compiling with emscripten, I could not get the WASM allocators to work.
+# Therefore I set up a custom allocator that uses the libc `malloc` etc that
+# emscripten exposes. See `source/main_web/main_web_entry.odin` for more info.
 # 
 # Also, see this separate repository for more detailed information on how this
 # kind of web build works:
@@ -41,11 +39,14 @@ export EMSDK_QUIET=1
 #     -define:RAYGUI_WASM_LIB=env.o
 # and add the following at to the `files` variable declared a few lines down:
 #     ${ODIN_PATH}/vendor/raylib/wasm/libraygui.a
-odin build source/main_web -target:freestanding_wasm32 -build-mode:obj -define:RAYLIB_WASM_LIB=env.o -vet -strict-style -o:speed -out:$OUT_DIR/game
+odin build source/main_web -target:js_wasm32 -build-mode:obj -define:RAYLIB_WASM_LIB=env.o -vet -strict-style -o:speed -out:$OUT_DIR/game
 
 ODIN_PATH=$(odin root)
+
+# Tell emscripten to compile the `main_web.c` file, which is the emscripten
+# entry point. We also link in the build Odin code, raylib and raygui
 files="source/main_web/main_web.c $OUT_DIR/game.wasm.o ${ODIN_PATH}/vendor/raylib/wasm/libraylib.a source/box2d/lib/box2d_wasm.o"
-flags="-sUSE_GLFW=3 -sASYNCIFY -sASSERTIONS -DPLATFORM_WEB --shell-file source/main_web/index_template.html --preload-file assets"
+flags="-sUSE_GLFW=3 -sWASM_BIGINT -sWARN_ON_UNDEFINED_SYMBOLS=0 -sASSERTIONS --shell-file source/main_web/index_template.html --preload-file assets"
 
 # shellcheck disable=SC2086
 # Add `-g` to `emcc` call to enable debug symbols (works in chrome).

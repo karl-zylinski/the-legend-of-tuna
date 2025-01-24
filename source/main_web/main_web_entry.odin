@@ -12,19 +12,21 @@ import game ".."
 @(private="file")
 web_context: runtime.Context
 
-// I'm not sure @thread_local works with WASM. We'll see if anyone makes a
-// multi-threaded WASM game!
-@(private="file")
-@thread_local temp_allocator: Default_Temp_Allocator
-
 @export
 web_init :: proc "c" () {
 	context = runtime.default_context()
-	context.allocator = aligned_raylib_allocator()
 
-	default_temp_allocator_init(&temp_allocator, 1*mem.Megabyte)
-	context.temp_allocator = default_temp_allocator(&temp_allocator)
-	context.logger = create_web_logger()
+	// The WASM allocator doesn't seem to work properly in combination with
+	// emscripten. There is some kind of conflict with how the manage memory.
+	// So this sets up an allocator that uses emscripten's malloc.
+	context.allocator = emscripten_allocator()
+	runtime.init_global_temporary_allocator(1*mem.Megabyte)
+
+	// Since we now use js_wasm32 we should be able to remove this and use
+	// context.logger = log.create_console_logger(). However, that one produces
+	// extra newlines on web. So it's a bug in that core lib.
+	context.logger = create_emscripten_logger()
+
 	web_context = context
 
 	game.game_init_window()
